@@ -44,3 +44,7 @@ L'installateur sera généré dans le dossier `dist-exe`.
 ## 📄 Licence
 
 © 2026 **Drayko**. Fait avec passion pour les étudiants.
+
+
+## Update: 2026-02-04T14:44:11.728Z
+<!-- 2025-10-20T00:00:00.000Z-0 -->

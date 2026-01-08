@@ -1,0 +1,46 @@
+# 🎓 Classify - L'Espace de Travail Ultime pour Étudiants
+
+Classify est une application de bureau (Electron) conçue pour aider les étudiants à organiser leurs cours, dossiers et révisions avec une interface premium, fluide et hautement personnalisable.
+
+## 🚀 Fonctionnalités Clés
+
+- **📦 Organisation par Matières & Dossiers** : Créez vos espaces de travail, ajoutez des emojis personnalisés et organisez vos documents par simple glisser-déposer (Drag & Drop).
+- **📅 Calendrier de Révision Intelligent** : Planifiez vos sessions d'étude. Basculez entre une vue **Grille** (mensuelle) et une vue **Liste** (chronologique) pour ne jamais perdre le fil.
+- **✨ Interface Premium & Dark Mode** : Une esthétique moderne avec des effets de flou (backdrop-blur), des animations fluides et un mode sombre somptueux pour les révisions nocturnes.
+- **🛡️ Confidentialité & Vitesse** : Toutes vos données sont stockées **localement** sur votre machine. Pas de serveurs, pas de cloud, une rapidité instantanée.
+- **🛠️ Intégration d'Éditeurs Externes** : Configurez vos logiciels préférés (Word, Obsidian, VS Code, etc.) pour ouvrir vos documents directement depuis Classify.
+- **🎨 Custom Dialogs** : Fini les alertes système génériques. Classify utilise ses propres boîtes de dialogue stylisées pour une immersion totale.
+
+## 🛠️ Stack Technique
+
+- **Frontend** : Vite + React + TypeScript
+- **Styling** : Tailwind CSS
+- **Desktop Framework** : Electron
+- **Icons** : Lucide React
+- **Persistence** : Local Storage & Electron-store logic
+
+## 📦 Installation & Construction
+
+### Prérequis
+- Node.js (version LTS recommandée)
+- npm
+
+### Développement
+```bash
+# Installer les dépendances
+npm install
+
+# Lancer en mode développement
+npm run dev
+```
+
+### Générer l'installateur (.exe)
+Il suffit de lancer le script fourni à la racine :
+```bash
+./GENERATE_EXE.bat
+```
+L'installateur sera généré dans le dossier `dist-exe`.
+
+## 📄 Licence
+
+© 2026 **Drayko**. Fait avec passion pour les étudiants.

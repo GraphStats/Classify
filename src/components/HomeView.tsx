@@ -108,36 +108,6 @@ export function HomeView({ subjects, onSelectSubject, onOpenCourse }: HomeViewPr
                     </div>
                 </header>
 
-                {/* Repartition Section */}
-                <section className="bg-white dark:bg-slate-900/50 p-8 rounded-[40px] border border-gray-100 dark:border-slate-800 shadow-sm animate-fade-in">
-                    <h3 className="text-xs font-black text-gray-400 dark:text-gray-600 uppercase tracking-[0.2em] mb-8">Répartition par matière</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {subjectStats.map(s => (
-                            <div key={s.name} className="space-y-3 group uppercase tracking-tight min-w-0">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2 min-w-0">
-                                        <Emoji unified={s.emoji} size={16} emojiStyle={EmojiStyle.APPLE} />
-                                        <span className="font-bold text-gray-700 dark:text-gray-300 text-sm truncate">{s.name}</span>
-                                    </div>
-                                    <span className="text-xs font-black text-gray-400 flex-shrink-0 ml-2">{s.count} cours</span>
-                                </div>
-                                <div className="h-2 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full rounded-full transition-all duration-1000 group-hover:brightness-110"
-                                        style={{
-                                            width: `${stats.totalCourses > 0 ? (s.count / stats.totalCourses) * 100 : 0}%`,
-                                            backgroundColor: s.color
-                                        }}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                        {subjects.length === 0 && (
-                            <p className="text-sm text-gray-400 italic">Aucune matière pour le moment.</p>
-                        )}
-                    </div>
-                </section>
-
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-white dark:bg-slate-900/50 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 flex items-center gap-5 transition-transform hover:scale-[1.02]">
@@ -168,6 +138,36 @@ export function HomeView({ subjects, onSelectSubject, onOpenCourse }: HomeViewPr
                         </div>
                     </div>
                 </div>
+
+                {/* Repartition Section */}
+                <section className="bg-white dark:bg-slate-900/50 p-8 rounded-[40px] border border-gray-100 dark:border-slate-800 shadow-sm animate-fade-in">
+                    <h3 className="text-xs font-black text-gray-400 dark:text-gray-600 uppercase tracking-[0.2em] mb-8">Répartition par matière</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {subjectStats.map(s => (
+                            <div key={s.name} className="space-y-3 group uppercase tracking-tight min-w-0">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <Emoji unified={s.emoji} size={16} emojiStyle={EmojiStyle.APPLE} />
+                                        <span className="font-bold text-gray-700 dark:text-gray-300 text-sm truncate">{s.name}</span>
+                                    </div>
+                                    <span className="text-xs font-black text-gray-400 flex-shrink-0 ml-2">{s.count} cours</span>
+                                </div>
+                                <div className="h-2 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full rounded-full transition-all duration-1000 group-hover:brightness-110"
+                                        style={{
+                                            width: `${stats.totalCourses > 0 ? (s.count / stats.totalCourses) * 100 : 0}%`,
+                                            backgroundColor: s.color
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                        {subjects.length === 0 && (
+                            <p className="text-sm text-gray-400 italic">Aucune matière pour le moment.</p>
+                        )}
+                    </div>
+                </section>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                     {/* Starred Courses */}

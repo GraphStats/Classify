@@ -79,31 +79,70 @@ ipcMain.handle('save-settings', (_, settings) => {
     return saveSettings(settings);
 });
 
-ipcMain.handle('open-file', (_, filePath) => {
+ipcMain.handle('open-file', async (_, filePath) => {
+    console.log(`[IPC] Request to open file: ${filePath}`);
+
+    if (!filePath || !fs.existsSync(filePath)) {
+        console.error(`[IPC] File does not exist: ${filePath}`);
+        return { success: false, error: 'Le fichier n\'existe pas ou a été déplacé.' };
+    }
+
     const settings = loadSettings();
     const ext = path.extname(filePath).toLowerCase();
     const editorPath = settings.editors && settings.editors[ext];
 
     if (editorPath) {
-        if (editorPath.startsWith('shell:')) {
-            // It's a Windows Store/Start Menu app shortcut
-            console.log(`Opening ${filePath} with shell app ${editorPath}`);
-            spawn('cmd.exe', ['/c', 'start', '""', editorPath, filePath], { detached: true, stdio: 'ignore' }).unref();
-            return { success: true, message: 'Opened with shell app' };
-        } else if (fs.existsSync(editorPath)) {
-            // Open with specific executable path
-            console.log(`Opening ${filePath} with ${editorPath}`);
-            spawn(editorPath, [filePath], { detached: true, stdio: 'ignore' }).unref();
-            return { success: true, message: 'Opened with configured editor' };
+        try {
+            if (editorPath.startsWith('shell:')) {
+                // Windows Store/Shell app
+                console.log(`[IPC] Opening with shell app: ${editorPath}`);
+                spawn('cmd.exe', ['/c', 'start', '""', editorPath, filePath], {
+                    detached: true,
+                    stdio: 'ignore',
+                    shell: true
+                }).unref();
+                return { success: true };
+            } else if (fs.existsSync(editorPath)) {
+                // Specific executable
+                console.log(`[IPC] Opening with custom editor: ${editorPath}`);
+
+                // Normal spawn handles spaces in paths if shell: true is NOT used, 
+                // OR if it IS used but we don't manually quote.
+                const child = spawn(editorPath, [filePath], {
+                    detached: true,
+                    stdio: 'ignore',
+                    shell: false
+                });
+
+                child.on('error', (err) => {
+                    console.error(`[IPC] Spawn error: ${err.message}`);
+                });
+
+                child.unref();
+                return { success: true };
+            } else {
+                console.warn(`[IPC] Custom editor path not found: ${editorPath}. Falling back to system default.`);
+            }
+        } catch (e: any) {
+            console.error(`[IPC] Failed to open with custom editor: ${e.message}`);
         }
     }
 
     // Open with system default
-    console.log(`Opening ${filePath} with system default`);
-    shell.openPath(filePath).then(err => {
-        if (err) console.error(err);
-    });
-    return { success: true, message: 'Opened with system default' };
+    console.log(`[IPC] Opening with system default: ${filePath}`);
+    try {
+        const error = await shell.openPath(filePath);
+        if (error) {
+            console.error(`[IPC] shell.openPath error: ${error}`);
+            // Fallback: try openExternal with file protocol
+            const fileUrl = `file:///${filePath.replace(/\\/g, '/')}`;
+            await shell.openExternal(fileUrl);
+        }
+        return { success: true };
+    } catch (e: any) {
+        console.error(`[IPC] Failed to open file: ${e.message}`);
+        return { success: false, error: 'Impossible d\'ouvrir le fichier avec l\'application par défaut.' };
+    }
 });
 
 // Native file dialog to pick file

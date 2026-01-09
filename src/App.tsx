@@ -204,7 +204,18 @@ function App() {
           setShowSettings(false);
           setShowCalendar(false);
         }}
-        onOpenCourse={(path) => window.electron.openFile(path)}
+        onOpenCourse={async (path) => {
+          const result = await window.electron.openFile(path);
+          if (result && !result.success) {
+            setDialog({
+              isOpen: true,
+              type: 'alert',
+              title: 'Erreur d\'ouverture',
+              message: result.error || 'Impossible d\'ouvrir le fichier.',
+              onConfirm: () => setDialog(prev => ({ ...prev, isOpen: false }))
+            });
+          }
+        }}
       />
     );
   };

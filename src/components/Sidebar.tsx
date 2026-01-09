@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Subject } from '../types';
 import { Plus, Settings as SettingsIcon, Trash2, LayoutDashboard, Sun, Moon, Calendar as CalendarIcon } from 'lucide-react';
-import EmojiPicker, { Emoji, EmojiStyle } from 'emoji-picker-react';
+import EmojiPicker, { Emoji, EmojiStyle, Theme } from 'emoji-picker-react';
 import type { EmojiClickData } from 'emoji-picker-react';
 
 interface SidebarProps {
@@ -139,7 +139,7 @@ export function Sidebar({
                                                     setNewSubjectEmoji(data.unified);
                                                     setShowEmojiPicker(false);
                                                 }}
-                                                theme={isDarkMode ? 'dark' : 'light'}
+                                                theme={isDarkMode ? Theme.DARK : Theme.LIGHT}
                                                 emojiStyle={EmojiStyle.APPLE}
                                                 width={350}
                                                 height={400}

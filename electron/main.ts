@@ -83,8 +83,11 @@ ipcMain.handle('open-file', async (_, filePath) => {
     console.log(`[IPC] Request to open file: ${filePath}`);
 
     if (!filePath || !fs.existsSync(filePath)) {
-        console.error(`[IPC] File does not exist: ${filePath}`);
-        return { success: false, error: 'Le fichier n\'existe pas ou a été déplacé.' };
+        console.error(`[IPC] File does not exist: "${filePath}"`);
+        return {
+            success: false,
+            error: `Le fichier n'est pas accessible (${filePath || 'chemin vide'}). S'il vient d'un dossier protégé ou d'un ZIP, essayez de le copier sur votre bureau avant.`
+        };
     }
 
     const settings = loadSettings();

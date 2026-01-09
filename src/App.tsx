@@ -144,13 +144,30 @@ function App() {
       return;
     }
 
-    const newCourses: Course[] = files.map(file => ({
-      id: Math.random().toString(36).substr(2, 9),
-      name: file.name.split('.').slice(0, -1).join('.'),
-      description: `Importé par glisser-déposer (${file.name})`,
-      filePath: (file as any).path,
-      createdAt: Date.now()
-    }));
+    const newCourses: Course[] = files.map(file => {
+      const path = (file as any).path;
+      console.log('Dropped file:', file.name, 'Path:', path);
+      return {
+        id: Math.random().toString(36).substr(2, 9),
+        name: file.name.split('.').slice(0, -1).join('.'),
+        description: `Importé par glisser-déposer (${file.name})`,
+        filePath: path || '',
+        createdAt: Date.now()
+      };
+    });
+
+    // Check if any path is missing
+    const missingPaths = newCourses.filter(c => !c.filePath);
+    if (missingPaths.length > 0) {
+      setDialog({
+        isOpen: true,
+        type: 'alert',
+        title: 'Erreur d\'import',
+        message: 'Impossible de récupérer le chemin du fichier. Vérifiez que vous lancez bien l\'application via Electron et non un navigateur.',
+        onConfirm: () => setDialog(prev => ({ ...prev, isOpen: false }))
+      });
+      return;
+    }
 
     const newSubjects = subjects.map(s => {
       if (s.id === targetSubjectId) {

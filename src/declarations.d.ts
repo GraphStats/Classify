@@ -9,6 +9,7 @@ declare global {
             selectFile: () => Promise<string | null>;
             selectEditorPath: () => Promise<string | null>;
             detectApps: () => Promise<{ name: string; path: string }[]>;
+            getFilePath: (file: File) => string;
         };
     }
 }

@@ -145,7 +145,7 @@ function App() {
     }
 
     const newCourses: Course[] = files.map(file => {
-      const path = (file as any).path;
+      const path = window.electron?.getFilePath ? window.electron.getFilePath(file) : (file as any).path;
       console.log('Dropped file:', file.name, 'Path:', path);
       return {
         id: Math.random().toString(36).substr(2, 9),

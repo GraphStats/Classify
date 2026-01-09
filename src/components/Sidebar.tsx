@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Subject } from '../types';
-import { Plus, Settings as SettingsIcon, Trash2, LayoutDashboard, Sun, Moon, Calendar as CalendarIcon } from 'lucide-react';
+import { Plus, Settings as SettingsIcon, Trash2, LayoutDashboard, Sun, Moon, Calendar as CalendarIcon, StickyNote } from 'lucide-react';
 import EmojiPicker, { Emoji, EmojiStyle, Theme } from 'emoji-picker-react';
 import type { EmojiClickData } from 'emoji-picker-react';
 
@@ -108,6 +108,9 @@ export function Sidebar({
                                         <Emoji unified={subject.emoji} size={20} emojiStyle={EmojiStyle.APPLE} />
                                     </div>
                                     <span className="font-bold truncate flex-1 text-sm uppercase tracking-tight">{subject.name}</span>
+                                    {subject.notes && subject.notes.trim() && (
+                                        <StickyNote size={12} className={`${activeSubjectId === subject.id ? 'text-purple-600 dark:text-purple-400' : 'text-gray-300 dark:text-gray-600'} flex-shrink-0 ml-auto`} />
+                                    )}
                                 </button>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onDeleteSubject(subject.id); }}

@@ -1,16 +1,17 @@
 import type { Course } from '../types';
-import { FileText, FileCode, File, ExternalLink, Trash2, Star } from 'lucide-react';
+import { FileText, FileCode, File, ExternalLink, Trash2, Star, Edit3 } from 'lucide-react';
 
 interface CourseCardProps {
     course: Course;
     onOpen: () => void;
     onDelete: () => void;
     onToggleStar: () => void;
+    onRename?: () => void;
     variant?: 'card' | 'list';
     folderId?: string;
 }
 
-export function CourseCard({ course, onOpen, onDelete, onToggleStar, variant = 'card', folderId }: CourseCardProps) {
+export function CourseCard({ course, onOpen, onDelete, onToggleStar, onRename, variant = 'card', folderId }: CourseCardProps) {
     const getIcon = (path?: string, size = 32) => {
         if (!path) return <File className="text-gray-400" size={size} />;
         const lowPath = path.toLowerCase();
@@ -43,7 +44,7 @@ export function CourseCard({ course, onOpen, onDelete, onToggleStar, variant = '
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-gray-800 dark:text-gray-100 group-hover:text-purple-700 dark:group-hover:text-purple-400 transition-colors truncate uppercase text-sm tracking-tight">{course.name}</h3>
+                    <h3 className="font-bold text-gray-800 dark:text-gray-100 group-hover:text-purple-700 dark:group-hover:text-purple-400 transition-colors line-clamp-2 uppercase text-sm tracking-tight" title={course.name}>{course.name}</h3>
                     <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate font-black uppercase tracking-widest">{course.description || "Aucune description"}</p>
                 </div>
 
@@ -61,6 +62,13 @@ export function CourseCard({ course, onOpen, onDelete, onToggleStar, variant = '
                         title="Ouvrir"
                     >
                         <ExternalLink size={16} />
+                    </button>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onRename?.(); }}
+                        className="p-2 text-gray-300 dark:text-gray-700 hover:text-purple-500 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors opacity-0 group-hover:opacity-100"
+                        title="Renommer"
+                    >
+                        <Edit3 size={16} />
                     </button>
                     <button
                         onClick={(e) => { e.stopPropagation(); onDelete(); }}
@@ -93,6 +101,13 @@ export function CourseCard({ course, onOpen, onDelete, onToggleStar, variant = '
                         <Star size={20} fill={course.isStarred ? "currentColor" : "none"} />
                     </button>
                     <button
+                        onClick={(e) => { e.stopPropagation(); onRename?.(); }}
+                        className="p-2.5 text-gray-200 dark:text-gray-700 hover:text-purple-500 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors opacity-0 group-hover:opacity-100"
+                        title="Renommer"
+                    >
+                        <Edit3 size={20} />
+                    </button>
+                    <button
                         onClick={(e) => { e.stopPropagation(); onDelete(); }}
                         className="p-2.5 text-gray-200 dark:text-gray-700 hover:text-red-500 dark:hover:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors opacity-0 group-hover:opacity-100"
                         title="Supprimer"
@@ -102,7 +117,7 @@ export function CourseCard({ course, onOpen, onDelete, onToggleStar, variant = '
                 </div>
             </div>
 
-            <h3 className="font-black text-lg text-gray-800 dark:text-gray-100 mb-2 group-hover:text-purple-700 dark:group-hover:text-purple-400 transition-colors line-clamp-1 uppercase tracking-tight">{course.name}</h3>
+            <h3 className="font-black text-lg text-gray-800 dark:text-gray-100 mb-2 group-hover:text-purple-700 dark:group-hover:text-purple-400 transition-colors line-clamp-2 uppercase tracking-tight min-h-[3.5rem]" title={course.name}>{course.name}</h3>
             <p className="text-xs font-medium text-gray-400 dark:text-gray-500 mb-6 line-clamp-2 min-h-[32px] flex-1 leading-relaxed">
                 {course.description || "Aucune description disponible pour ce cours."}
             </p>

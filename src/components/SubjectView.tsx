@@ -5,7 +5,7 @@ import { CourseModal } from './CourseModal';
 import EmojiPicker, { Emoji, EmojiStyle } from 'emoji-picker-react';
 import {
     Plus, FolderPlus, Folder as FolderIcon, Trash2, Edit3,
-    ChevronDown, StickyNote, X, Palette
+    ChevronDown, StickyNote, X, Palette, Search, ArrowUpDown
 } from 'lucide-react';
 import { CustomDialog } from './CustomDialog';
 
@@ -36,6 +36,8 @@ export function SubjectView({ subject, onUpdateSubject, onDeleteCourse }: Subjec
     const [showColorPicker, setShowColorPicker] = useState(false);
     const [showNotes, setShowNotes] = useState(false);
     const [localNotes, setLocalNotes] = useState(subject.notes || '');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [sortBy, setSortBy] = useState<'date' | 'name'>('date');
 
     const [dialog, setDialog] = useState<{
         isOpen: boolean;
@@ -170,6 +172,47 @@ export function SubjectView({ subject, onUpdateSubject, onDeleteCourse }: Subjec
         if (newName) {
             onUpdateSubject({ ...subject, name: newName });
         }
+    };
+
+    const handleRenameCourse = (courseId: string, folderId: string | null) => {
+        const currentCourse = folderId
+            ? subject.folders?.find(f => f.id === folderId)?.courses.find(c => c.id === courseId)
+            : subject.courses?.find(c => c.id === courseId);
+
+        if (!currentCourse) return;
+
+        const newName = prompt('Nouveau nom pour le cours :', currentCourse.name);
+        if (newName && newName.trim()) {
+            const updatedSubject = { ...subject };
+            if (folderId) {
+                updatedSubject.folders = (subject.folders || []).map(f =>
+                    f.id === folderId ? {
+                        ...f,
+                        courses: (f.courses || []).map(c => c.id === courseId ? { ...c, name: newName } : c)
+                    } : f
+                );
+            } else {
+                updatedSubject.courses = (subject.courses || []).map(c => c.id === courseId ? { ...c, name: newName } : c);
+            }
+            onUpdateSubject(updatedSubject);
+        }
+    };
+
+    const filterAndSortCourses = (courses: Course[]) => {
+        let filtered = [...(courses || [])];
+
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            filtered = filtered.filter(c =>
+                c.name.toLowerCase().includes(q) ||
+                c.description.toLowerCase().includes(q)
+            );
+        }
+
+        return filtered.sort((a, b) => {
+            if (sortBy === 'name') return a.name.localeCompare(b.name);
+            return (b.createdAt || 0) - (a.createdAt || 0);
+        });
     };
 
     const handleMoveCourse = (courseId: string, sourceFolderId: string, targetFolderId: string | null) => {
@@ -310,6 +353,31 @@ export function SubjectView({ subject, onUpdateSubject, onDeleteCourse }: Subjec
                         </div>
                     </header>
 
+                    {/* Search & Sort Bar */}
+                    <div className="flex flex-col sm:flex-row gap-4 mb-8 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm">
+                        <div className="flex-1 relative group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors" size={18} />
+                            <input
+                                type="text"
+                                placeholder="Rechercher dans cette matière..."
+                                className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-slate-800 rounded-2xl border border-transparent focus:border-purple-300 dark:focus:border-purple-900/50 outline-none transition-all text-sm font-bold text-gray-700 dark:text-gray-200"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex items-center gap-2 bg-gray-50 dark:bg-slate-800 p-2 rounded-2xl border border-transparent">
+                            <ArrowUpDown className="text-gray-400 ml-2" size={18} />
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value as 'date' | 'name')}
+                                className="bg-transparent text-sm font-black uppercase tracking-widest text-gray-600 dark:text-gray-400 outline-none px-2 cursor-pointer"
+                            >
+                                <option value="date">Récents</option>
+                                <option value="name">A - Z</option>
+                            </select>
+                        </div>
+                    </div>
+
                     {/* Content */}
                     <div className="space-y-12 pb-20">
                         {isCreatingFolder && (
@@ -336,83 +404,107 @@ export function SubjectView({ subject, onUpdateSubject, onDeleteCourse }: Subjec
                             </div>
                         )}
 
-                        {(subject.folders || []).map(folder => (
-                            <div
-                                key={folder.id}
-                                className="space-y-5"
-                                onDragOver={handleDragOver}
-                                onDrop={(e) => handleDropOnFolder(e, folder.id)}
-                            >
-                                <div className="flex items-center justify-between group">
-                                    <button
-                                        onClick={() => toggleFolder(folder.id)}
-                                        className="flex items-center gap-4 text-2xl font-black text-gray-800 dark:text-gray-200 hover:opacity-70 transition-opacity"
-                                    >
-                                        <div className={`p-1 transition-transform duration-300 ${expandedFolders[folder.id] ? 'rotate-0' : '-rotate-90'}`}>
-                                            <ChevronDown size={24} className="text-gray-300 dark:text-slate-700" />
-                                        </div>
-                                        <FolderIcon style={{ color: currentColor }} size={28} />
-                                        <span className="uppercase tracking-tight">{folder.name}</span>
-                                        <span className="text-[10px] font-black bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-gray-500 px-3 py-1 rounded-full">{folder.courses.length}</span>
-                                    </button>
-                                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all bg-white dark:bg-slate-800 p-1.5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
-                                        <button
-                                            onClick={() => { setActiveFolderId(folder.id); setIsModalOpen(true); }}
-                                            className="p-2 text-gray-400 hover:text-purple-600"
-                                            title="Ajouter"
-                                        >
-                                            <Plus size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteFolder(folder.id)}
-                                            className="p-2 text-gray-400 hover:text-red-500"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </div>
+                        {(subject.folders || []).map(folder => {
+                            const filteredFolderCourses = filterAndSortCourses(folder.courses);
+                            if (searchQuery && filteredFolderCourses.length === 0) return null;
 
-                                {expandedFolders[folder.id] && (
-                                    <div className="grid grid-cols-1 gap-2 animate-fade-in">
-                                        {folder.courses.map(course => (
+                            return (
+                                <div
+                                    key={folder.id}
+                                    className="space-y-5"
+                                    onDragOver={handleDragOver}
+                                    onDrop={(e) => handleDropOnFolder(e, folder.id)}
+                                >
+                                    <div className="flex items-center justify-between group">
+                                        <button
+                                            onClick={() => toggleFolder(folder.id)}
+                                            className="flex items-center gap-4 text-2xl font-black text-gray-800 dark:text-gray-200 hover:opacity-70 transition-opacity"
+                                        >
+                                            <div className={`p-1 transition-transform duration-300 ${expandedFolders[folder.id] ? 'rotate-0' : '-rotate-90'}`}>
+                                                <ChevronDown size={24} className="text-gray-300 dark:text-slate-700" />
+                                            </div>
+                                            <FolderIcon style={{ color: currentColor }} size={28} />
+                                            <span className="uppercase tracking-tight">{folder.name}</span>
+                                            <span className="text-[10px] font-black bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-gray-500 px-3 py-1 rounded-full">{folder.courses.length}</span>
+                                        </button>
+                                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all bg-white dark:bg-slate-800 p-1.5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                                            <button
+                                                onClick={() => { setActiveFolderId(folder.id); setIsModalOpen(true); }}
+                                                className="p-2 text-gray-400 hover:text-purple-600"
+                                                title="Ajouter"
+                                            >
+                                                <Plus size={18} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteFolder(folder.id)}
+                                                className="p-2 text-gray-400 hover:text-red-500"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {expandedFolders[folder.id] && (
+                                        <div className="grid grid-cols-1 gap-2 animate-fade-in pl-6 border-l-2 border-gray-50 dark:border-slate-800 ml-4">
+                                            {filteredFolderCourses.map(course => (
+                                                <CourseCard
+                                                    key={course.id}
+                                                    course={course}
+                                                    variant="list"
+                                                    folderId={folder.id}
+                                                    onOpen={() => handleOpenCourse(course.filePath)}
+                                                    onDelete={() => onDeleteCourse(subject.id, course.id, folder.id)}
+                                                    onToggleStar={() => handleToggleStar(course.id, folder.id)}
+                                                    onRename={() => handleRenameCourse(course.id, folder.id)}
+                                                />
+                                            ))}
+                                            {filteredFolderCourses.length === 0 && (
+                                                <p className="text-xs text-gray-400 italic py-2">Aucun cours trouvé dans ce dossier.</p>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+
+                        {(() => {
+                            const filteredRootCourses = filterAndSortCourses(subject.courses);
+                            if (searchQuery && filteredRootCourses.length === 0 && (subject.folders || []).length > 0) return null;
+
+                            return (
+                                <div
+                                    className="space-y-8 min-h-[100px]"
+                                    onDragOver={handleDragOver}
+                                    onDrop={(e) => handleDropOnFolder(e, null)}
+                                >
+                                    {(filteredRootCourses.length > 0) && (
+                                        <div className="flex items-center gap-4">
+                                            <h2 className="text-xs font-black text-gray-400 dark:text-gray-600 uppercase tracking-[0.2em]">
+                                                {searchQuery ? 'Résultats de recherche' : 'Autres cours'}
+                                            </h2>
+                                            <div className="h-[2px] bg-gray-100 dark:bg-slate-800 flex-1"></div>
+                                        </div>
+                                    )}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                        {filteredRootCourses.map(course => (
                                             <CourseCard
                                                 key={course.id}
                                                 course={course}
-                                                variant="list"
-                                                folderId={folder.id}
                                                 onOpen={() => handleOpenCourse(course.filePath)}
-                                                onDelete={() => onDeleteCourse(subject.id, course.id, folder.id)}
-                                                onToggleStar={() => handleToggleStar(course.id, folder.id)}
+                                                onDelete={() => onDeleteCourse(subject.id, course.id)}
+                                                onToggleStar={() => handleToggleStar(course.id, null)}
+                                                onRename={() => handleRenameCourse(course.id, null)}
                                             />
                                         ))}
                                     </div>
-                                )}
-                            </div>
-                        ))}
-
-                        <div
-                            className="space-y-8 min-h-[100px]"
-                            onDragOver={handleDragOver}
-                            onDrop={(e) => handleDropOnFolder(e, null)}
-                        >
-                            {(subject.courses?.length > 0) && (
-                                <div className="flex items-center gap-4">
-                                    <h2 className="text-xs font-black text-gray-400 dark:text-gray-600 uppercase tracking-[0.2em]">Autres cours</h2>
-                                    <div className="h-[2px] bg-gray-100 dark:bg-slate-800 flex-1"></div>
+                                    {searchQuery && filteredRootCourses.length === 0 && (subject.folders || []).every(f => filterAndSortCourses(f.courses).length === 0) && (
+                                        <div className="text-center py-10 text-gray-400 font-bold uppercase text-xs tracking-widest">
+                                            Aucun cours ne correspond à "{searchQuery}"
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                {(subject.courses || []).map(course => (
-                                    <CourseCard
-                                        key={course.id}
-                                        course={course}
-                                        onOpen={() => handleOpenCourse(course.filePath)}
-                                        onDelete={() => onDeleteCourse(subject.id, course.id)}
-                                        onToggleStar={() => handleToggleStar(course.id, null)}
-                                    />
-                                ))}
-                            </div>
-                        </div>
+                            );
+                        })()}
 
                         {totalCourses === 0 && (subject.folders || []).length === 0 && (
                             <div className="text-center py-32 bg-white dark:bg-slate-900 rounded-[48px] shadow-2xl dark:shadow-none border border-gray-100 dark:border-slate-800">

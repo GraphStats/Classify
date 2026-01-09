@@ -17,13 +17,23 @@ export function CourseModal({ isOpen, onClose, onSave }: CourseModalProps) {
     const handleFileSelect = async () => {
         if (window.electron) {
             const path = await window.electron.selectFile();
-            if (path) setFilePath(path);
+            if (path) {
+                setFilePath(path);
+                if (!name) {
+                    const fileName = path.split('\\').pop()?.split('/').pop()?.split('.').slice(0, -1).join('.') || '';
+                    setName(fileName);
+                }
+            }
         } else {
             const input = document.createElement('input');
             input.type = 'file';
             input.onchange = (e: any) => {
                 if (e.target.files?.length) {
-                    setFilePath(e.target.files[0].name);
+                    const file = e.target.files[0];
+                    setFilePath(file.name);
+                    if (!name) {
+                        setName(file.name.split('.').slice(0, -1).join('.') || file.name);
+                    }
                 }
             };
             input.click();

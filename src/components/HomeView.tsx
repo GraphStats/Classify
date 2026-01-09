@@ -25,6 +25,14 @@ export function HomeView({ subjects, onSelectSubject, onOpenCourse }: HomeViewPr
         return { totalCourses, totalFolders, totalSubjects: subjects.length };
     }, [subjects]);
 
+    const subjectStats = useMemo(() => {
+        return subjects.map(s => {
+            let count = (s.courses?.length || 0);
+            s.folders?.forEach(f => count += (f.courses?.length || 0));
+            return { name: s.name, count, color: s.color || '#9333ea', emoji: s.emoji };
+        }).sort((a, b) => b.count - a.count);
+    }, [subjects]);
+
     const allCoursesWithSubject = useMemo(() => {
         const courses: (Course & { subjectEmoji: string, subjectName: string, subjectId: string })[] = [];
         subjects.forEach(s => {
@@ -84,7 +92,7 @@ export function HomeView({ subjects, onSelectSubject, onOpenCourse }: HomeViewPr
                                                 <Emoji unified={result.subjectEmoji} size={24} emojiStyle={EmojiStyle.APPLE} />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <h4 className="font-bold text-gray-800 dark:text-gray-200 truncate">{result.name}</h4>
+                                                <h4 className="font-bold text-gray-800 dark:text-gray-200 line-clamp-2" title={result.name}>{result.name}</h4>
                                                 <p className="text-xs text-gray-400 truncate">{result.subjectName}</p>
                                             </div>
                                             <ArrowRight size={16} className="text-gray-300" />
@@ -99,6 +107,36 @@ export function HomeView({ subjects, onSelectSubject, onOpenCourse }: HomeViewPr
                         )}
                     </div>
                 </header>
+
+                {/* Repartition Section */}
+                <section className="bg-white dark:bg-slate-900/50 p-8 rounded-[40px] border border-gray-100 dark:border-slate-800 shadow-sm animate-fade-in">
+                    <h3 className="text-xs font-black text-gray-400 dark:text-gray-600 uppercase tracking-[0.2em] mb-8">Répartition par matière</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {subjectStats.map(s => (
+                            <div key={s.name} className="space-y-3 group uppercase tracking-tight min-w-0">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <Emoji unified={s.emoji} size={16} emojiStyle={EmojiStyle.APPLE} />
+                                        <span className="font-bold text-gray-700 dark:text-gray-300 text-sm truncate">{s.name}</span>
+                                    </div>
+                                    <span className="text-xs font-black text-gray-400 flex-shrink-0 ml-2">{s.count} cours</span>
+                                </div>
+                                <div className="h-2 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full rounded-full transition-all duration-1000 group-hover:brightness-110"
+                                        style={{
+                                            width: `${stats.totalCourses > 0 ? (s.count / stats.totalCourses) * 100 : 0}%`,
+                                            backgroundColor: s.color
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                        {subjects.length === 0 && (
+                            <p className="text-sm text-gray-400 italic">Aucune matière pour le moment.</p>
+                        )}
+                    </div>
+                </section>
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -149,7 +187,7 @@ export function HomeView({ subjects, onSelectSubject, onOpenCourse }: HomeViewPr
                                             <Star size={18} className="text-yellow-500 fill-yellow-500" />
                                         </div>
                                         <div className="flex-1">
-                                            <h4 className="font-bold text-gray-800 dark:text-gray-200 truncate">{course.name}</h4>
+                                            <h4 className="font-bold text-gray-800 dark:text-gray-200 line-clamp-2 min-h-[2.5rem]" title={course.name}>{course.name}</h4>
                                             <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest">{course.subjectName}</p>
                                         </div>
                                         <button
@@ -179,7 +217,7 @@ export function HomeView({ subjects, onSelectSubject, onOpenCourse }: HomeViewPr
                                         <Emoji unified={course.subjectEmoji} size={28} emojiStyle={EmojiStyle.APPLE} />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h4 className="font-bold text-gray-800 dark:text-gray-200 truncate">{course.name}</h4>
+                                        <h4 className="font-bold text-gray-800 dark:text-gray-200 line-clamp-2" title={course.name}>{course.name}</h4>
                                         <p className="text-xs text-gray-400 dark:text-gray-500 uppercase font-black tracking-tight">{course.subjectName}</p>
                                     </div>
                                     <button

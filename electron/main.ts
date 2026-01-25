@@ -1,8 +1,8 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import fs from 'fs';
 import { spawn } from 'child_process';
-import https from 'https';
 
 const userDataPath = app.getPath('userData');
 const settingsPath = path.join(userDataPath, 'settings.json');
@@ -42,114 +42,76 @@ function saveSettings(settings: any) {
 
 let mainWindow: BrowserWindow | null = null;
 
-type ReleaseAsset = {
-    name: string;
-    size: number;
-    browser_download_url: string;
-    content_type?: string;
+type UpdateStatus = {
+    status: 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error';
+    currentVersion?: string;
+    latestVersion?: string;
+    percent?: number;
+    bytesPerSecond?: number;
+    transferred?: number;
+    total?: number;
+    message?: string;
 };
 
-type ReleaseInfo = {
-    tag_name?: string;
-    name?: string;
-    html_url?: string;
-    published_at?: string;
-    assets?: ReleaseAsset[];
-};
+const getCurrentVersion = () => app.getVersion();
 
-type UpdateCheckResult = {
-    currentVersion: string;
-    latestVersion: string;
-    updateAvailable: boolean;
-    releaseName?: string;
-    publishedAt?: string;
-    releaseUrl?: string;
-    downloadUrl?: string;
-    error?: string;
-};
-
-function extractVersion(raw?: string) {
-    if (!raw) return null;
-    const match = raw.match(/\d+(?:\.\d+){1,3}/);
-    return match ? match[0] : null;
-}
-
-function compareVersions(a: string, b: string) {
-    const aParts = a.split('.').map(n => parseInt(n, 10));
-    const bParts = b.split('.').map(n => parseInt(n, 10));
-    const length = Math.max(aParts.length, bParts.length);
-    for (let i = 0; i < length; i += 1) {
-        const aVal = aParts[i] ?? 0;
-        const bVal = bParts[i] ?? 0;
-        if (aVal > bVal) return 1;
-        if (aVal < bVal) return -1;
+const sendUpdateStatus = (status: UpdateStatus) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('update-status', status);
     }
-    return 0;
-}
+};
 
-function fetchLatestRelease(): Promise<ReleaseInfo> {
-    return new Promise((resolve, reject) => {
-        const req = https.request(
-            {
-                hostname: 'api.github.com',
-                path: '/repos/GraphStats/Classify/releases/latest',
-                method: 'GET',
-                headers: {
-                    'User-Agent': 'Classify',
-                    'Accept': 'application/vnd.github+json'
-                }
-            },
-            (res) => {
-                let data = '';
-                res.on('data', (chunk) => (data += chunk));
-                res.on('end', () => {
-                    try {
-                        if (res.statusCode && res.statusCode >= 400) {
-                            reject(new Error(`GitHub API error: ${res.statusCode}`));
-                            return;
-                        }
-                        const parsed = JSON.parse(data);
-                        resolve(parsed);
-                    } catch (e) {
-                        reject(e);
-                    }
-                });
-            }
-        );
+const initAutoUpdater = () => {
+    autoUpdater.setFeedURL({
+        provider: 'github',
+        owner: 'GraphStats',
+        repo: 'Classify'
+    } as any);
+    autoUpdater.autoDownload = true;
+    autoUpdater.autoInstallOnAppQuit = true;
 
-        req.on('error', reject);
-        req.end();
+    autoUpdater.on('checking-for-update', () => {
+        sendUpdateStatus({ status: 'checking', currentVersion: getCurrentVersion() });
     });
-}
-
-async function checkForUpdates(): Promise<UpdateCheckResult> {
-    const currentVersion = app.getVersion();
-    try {
-        const release = await fetchLatestRelease();
-        const latestVersion = extractVersion(release.tag_name) || extractVersion(release.name) || currentVersion;
-        const updateAvailable = compareVersions(currentVersion, latestVersion) < 0;
-        const assets = release.assets || [];
-        const preferredAsset = assets.find(a => a.name?.toLowerCase().endsWith('.exe')) || assets[0];
-
-        return {
-            currentVersion,
-            latestVersion,
-            updateAvailable,
-            releaseName: release.name || release.tag_name,
-            publishedAt: release.published_at,
-            releaseUrl: release.html_url,
-            downloadUrl: preferredAsset?.browser_download_url
-        };
-    } catch (e: any) {
-        console.error('Update check failed', e);
-        return {
-            currentVersion,
-            latestVersion: currentVersion,
-            updateAvailable: false,
-            error: 'Impossible de contacter GitHub pour verifier les mises a jour.'
-        };
-    }
-}
+    autoUpdater.on('update-available', (info) => {
+        sendUpdateStatus({
+            status: 'available',
+            currentVersion: getCurrentVersion(),
+            latestVersion: info?.version
+        });
+    });
+    autoUpdater.on('update-not-available', (info) => {
+        sendUpdateStatus({
+            status: 'not-available',
+            currentVersion: getCurrentVersion(),
+            latestVersion: info?.version
+        });
+    });
+    autoUpdater.on('download-progress', (progress) => {
+        sendUpdateStatus({
+            status: 'downloading',
+            currentVersion: getCurrentVersion(),
+            percent: Math.round(progress.percent),
+            bytesPerSecond: progress.bytesPerSecond,
+            transferred: progress.transferred,
+            total: progress.total
+        });
+    });
+    autoUpdater.on('update-downloaded', (info) => {
+        sendUpdateStatus({
+            status: 'downloaded',
+            currentVersion: getCurrentVersion(),
+            latestVersion: info?.version
+        });
+    });
+    autoUpdater.on('error', (error) => {
+        sendUpdateStatus({
+            status: 'error',
+            currentVersion: getCurrentVersion(),
+            message: error?.message || 'Erreur inconnue.'
+        });
+    });
+};
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -180,6 +142,7 @@ function createWindow() {
 
 app.whenReady().then(() => {
     createWindow();
+    initAutoUpdater();
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -200,7 +163,43 @@ ipcMain.handle('save-settings', (_, settings) => {
 });
 
 ipcMain.handle('check-for-updates', async () => {
-    return await checkForUpdates();
+    if (!app.isPackaged) {
+        const status = {
+            status: 'error',
+            currentVersion: getCurrentVersion(),
+            message: 'Les mises a jour auto sont disponibles uniquement sur la version installee.'
+        } as UpdateStatus;
+        sendUpdateStatus(status);
+        return status;
+    }
+
+    try {
+        await autoUpdater.checkForUpdates();
+        const status = {
+            status: 'checking',
+            currentVersion: getCurrentVersion()
+        } as UpdateStatus;
+        return status;
+    } catch (error: any) {
+        const status = {
+            status: 'error',
+            currentVersion: getCurrentVersion(),
+            message: error?.message || 'Impossible de verifier les mises a jour.'
+        } as UpdateStatus;
+        sendUpdateStatus(status);
+        return status;
+    }
+});
+
+ipcMain.handle('install-update', async () => {
+    if (!app.isPackaged) return false;
+    try {
+        autoUpdater.quitAndInstall();
+        return true;
+    } catch (e) {
+        console.error('Failed to install update', e);
+        return false;
+    }
 });
 
 ipcMain.handle('open-external', async (_, url: string) => {

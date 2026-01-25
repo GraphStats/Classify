@@ -7,7 +7,7 @@ import { CalendarView } from './components/CalendarView';
 import { HomeView } from './components/HomeView';
 import { UploadCloud } from 'lucide-react';
 import { CustomDialog } from './components/CustomDialog';
-import type { Subject, Course, UpdateCheckResult } from './types';
+import type { Subject, Course, UpdateStatus } from './types';
 
 function App() {
   const {
@@ -21,7 +21,9 @@ function App() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
   const didCheckUpdates = useRef(false);
+  const lastNotifiedUpdate = useRef<string | null>(null);
 
   // Dialog state
   const [dialog, setDialog] = useState<{
@@ -30,6 +32,8 @@ function App() {
     title: string;
     message: string;
     onConfirm: () => void;
+    confirmLabel?: string;
+    cancelLabel?: string;
   }>({
     isOpen: false,
     type: 'alert',
@@ -46,6 +50,14 @@ function App() {
   }, [settings.theme]);
 
   useEffect(() => {
+    if (!window.electron?.onUpdateStatus) return;
+    const unsubscribe = window.electron.onUpdateStatus((status: UpdateStatus) => {
+      setUpdateStatus(status);
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
     if (loading) return;
     if (didCheckUpdates.current) return;
     if (settings.autoUpdatesEnabled === undefined) return;
@@ -53,25 +65,32 @@ function App() {
     if (!window.electron?.checkForUpdates) return;
 
     didCheckUpdates.current = true;
-    window.electron.checkForUpdates().then((result: UpdateCheckResult) => {
-      if (!result?.updateAvailable) return;
-      setDialog({
-        isOpen: true,
-        type: 'confirm',
-        title: 'Mise a jour disponible',
-        message: `Une nouvelle version (${result.latestVersion}) est disponible. Vous utilisez ${result.currentVersion}.`,
-        onConfirm: async () => {
-          const url = result.downloadUrl || result.releaseUrl;
-          if (url && window.electron?.openExternal) {
-            await window.electron.openExternal(url);
-          }
-          setDialog(prev => ({ ...prev, isOpen: false }));
-        }
-      });
-    }).catch(() => {
+    window.electron.checkForUpdates().catch(() => {
       // Silent: avoid blocking the user on startup.
     });
   }, [loading, settings.autoUpdatesEnabled]);
+
+  useEffect(() => {
+    if (updateStatus?.status !== 'downloaded') return;
+    const version = updateStatus.latestVersion || 'update';
+    if (lastNotifiedUpdate.current === version) return;
+    lastNotifiedUpdate.current = version;
+
+    setDialog({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Mise a jour prete',
+      message: `La version ${updateStatus.latestVersion || ''} est telechargee. Redemarrer pour installer ?`,
+      confirmLabel: 'Installer et redemarrer',
+      cancelLabel: 'Plus tard',
+      onConfirm: async () => {
+        if (window.electron?.installUpdate) {
+          await window.electron.installUpdate();
+        }
+        setDialog(prev => ({ ...prev, isOpen: false }));
+      }
+    });
+  }, [updateStatus?.status, updateStatus?.latestVersion]);
 
   const toggleTheme = () => {
     const nextMode = !isDarkMode;
@@ -216,7 +235,15 @@ function App() {
 
   const renderContent = () => {
     if (showSettings) {
-      return <SettingsView settings={settings} onSave={updateSettings} />;
+      return (
+        <SettingsView
+          settings={settings}
+          onSave={updateSettings}
+          updateStatus={updateStatus}
+          onCheckUpdates={() => window.electron?.checkForUpdates?.()}
+          onInstallUpdate={() => window.electron?.installUpdate?.()}
+        />
+      );
     }
 
     if (showCalendar) {
@@ -260,6 +287,7 @@ function App() {
               message: result.error || 'Impossible d\'ouvrir le fichier.',
               onConfirm: () => setDialog(prev => ({ ...prev, isOpen: false }))
             });
+            return;
           }
         }}
       />

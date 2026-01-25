@@ -8,6 +8,12 @@ contextBridge.exposeInMainWorld('electron', {
     selectEditorPath: () => ipcRenderer.invoke('select-editor-path'),
     detectApps: () => ipcRenderer.invoke('detect-apps'),
     checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+    installUpdate: () => ipcRenderer.invoke('install-update'),
+    onUpdateStatus: (callback: (status: any) => void) => {
+        const listener = (_event: Electron.IpcRendererEvent, status: any) => callback(status);
+        ipcRenderer.on('update-status', listener);
+        return () => ipcRenderer.removeListener('update-status', listener);
+    },
     openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
     getFilePath: (file: File) => {
         // @ts-ignore - webUtils exists in Electron 20+

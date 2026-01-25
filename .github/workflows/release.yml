@@ -57,6 +57,15 @@ jobs:
           for f in dist-exe/*.dmg; do
             mv "$f" "${f//Mac.x64/Mac.Intel}"
           done
+          for f in dist-exe/*.blockmap; do
+            mv "$f" "${f//Mac.x64/Mac.Intel}"
+          done
+          python - <<'PY'
+          from pathlib import Path
+          for path in Path("dist-exe").glob("latest-mac*.yml"):
+              text = path.read_text()
+              path.write_text(text.replace("Mac.x64", "Mac.Intel"))
+          PY
 
       - name: Rename macOS artifact (ARM)
         if: matrix.platform == 'mac' && matrix.arch == 'arm64'
@@ -64,6 +73,15 @@ jobs:
           for f in dist-exe/*.dmg; do
             mv "$f" "${f//Mac.arm64/Mac.ARM}"
           done
+          for f in dist-exe/*.blockmap; do
+            mv "$f" "${f//Mac.arm64/Mac.ARM}"
+          done
+          python - <<'PY'
+          from pathlib import Path
+          for path in Path("dist-exe").glob("latest-mac*.yml"):
+              text = path.read_text()
+              path.write_text(text.replace("Mac.arm64", "Mac.ARM"))
+          PY
 
       - name: Build Application (Linux)
         if: matrix.platform == 'linux'
@@ -76,21 +94,30 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build-windows-x64
-          path: dist-exe/*.exe
+          path: |
+            dist-exe/*.exe
+            dist-exe/*.yml
+            dist-exe/*.blockmap
 
       - name: Upload macOS Artifact
         if: matrix.platform == 'mac'
         uses: actions/upload-artifact@v4
         with:
           name: build-macos-${{ matrix.arch }}
-          path: dist-exe/*.dmg
+          path: |
+            dist-exe/*.dmg
+            dist-exe/*.yml
+            dist-exe/*.blockmap
 
       - name: Upload Linux Artifact
         if: matrix.platform == 'linux'
         uses: actions/upload-artifact@v4
         with:
           name: build-linux-${{ matrix.arch }}
-          path: dist-exe/*.AppImage
+          path: |
+            dist-exe/*.AppImage
+            dist-exe/*.yml
+            dist-exe/*.blockmap
 
   release:
     runs-on: ubuntu-latest
@@ -125,5 +152,7 @@ jobs:
             artifacts/**/*.exe
             artifacts/**/*.dmg
             artifacts/**/*.AppImage
+            artifacts/**/*.yml
+            artifacts/**/*.blockmap
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

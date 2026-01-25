@@ -1,22 +1,24 @@
 import { useState, useEffect } from 'react';
-import type { Settings, UpdateCheckResult } from '../types';
+import type { Settings, UpdateStatus } from '../types';
 import { Save, Sparkles, Layout, Monitor, RefreshCcw, Download } from 'lucide-react';
 import { CustomDialog } from './CustomDialog';
 
 interface SettingsViewProps {
     settings: Settings;
     onSave: (settings: Settings) => void;
+    updateStatus?: UpdateStatus | null;
+    onCheckUpdates?: () => Promise<any> | void;
+    onInstallUpdate?: () => Promise<any> | void;
 }
 
 const SUPPORTED_EXTS = ['.docx', '.doc', '.md', '.txt', '.odt', '.pdf'];
 
-export function SettingsView({ settings, onSave }: SettingsViewProps) {
+export function SettingsView({ settings, onSave, updateStatus, onCheckUpdates, onInstallUpdate }: SettingsViewProps) {
     const [editors, setEditors] = useState<Record<string, string>>(settings.editors || {});
     const [detectedApps, setDetectedApps] = useState<{ name: string; path: string }[]>([]);
     const [scanning, setScanning] = useState(false);
     const [autoUpdatesEnabled, setAutoUpdatesEnabled] = useState(settings.autoUpdatesEnabled ?? true);
     const [checkingUpdates, setCheckingUpdates] = useState(false);
-    const [updateStatus, setUpdateStatus] = useState<UpdateCheckResult | null>(null);
     const [lastCheckedAt, setLastCheckedAt] = useState<string | null>(null);
 
     const [dialog, setDialog] = useState<{
@@ -66,6 +68,26 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
         setEditors(prev => ({ ...prev, [ext]: path }));
     };
 
+    const getUpdateSummary = () => {
+        if (!updateStatus) return 'Aucune verification recente.';
+        switch (updateStatus.status) {
+            case 'checking':
+                return 'Verification en cours...';
+            case 'available':
+                return `Nouvelle version: ${updateStatus.latestVersion || ''}`.trim();
+            case 'not-available':
+                return `Version actuelle: ${updateStatus.currentVersion || ''}`.trim();
+            case 'downloading':
+                return `Telechargement: ${updateStatus.percent ?? 0}%`;
+            case 'downloaded':
+                return `Mise a jour prete: ${updateStatus.latestVersion || ''}`.trim();
+            case 'error':
+                return updateStatus.message || 'Erreur de mise a jour.';
+            default:
+                return `Version actuelle: ${updateStatus.currentVersion || ''}`.trim();
+        }
+    };
+
     const handleSave = () => {
         onSave({ ...settings, editors, autoUpdatesEnabled });
         setDialog({
@@ -77,48 +99,31 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
         });
     };
 
+    useEffect(() => {
+        if (!updateStatus) return;
+        if (updateStatus.status === 'not-available' || updateStatus.status === 'available' || updateStatus.status === 'downloaded' || updateStatus.status === 'error') {
+            setLastCheckedAt(new Date().toISOString());
+        }
+        if (updateStatus.status === 'error' && updateStatus.message) {
+            setDialog({
+                isOpen: true,
+                type: 'alert',
+                title: 'Verification impossible',
+                message: updateStatus.message,
+                onConfirm: () => setDialog(prev => ({ ...prev, isOpen: false }))
+            });
+        }
+    }, [updateStatus]);
+
+    useEffect(() => {
+        setCheckingUpdates(updateStatus?.status === 'checking' || updateStatus?.status === 'downloading');
+    }, [updateStatus?.status]);
+
     const handleCheckUpdates = async () => {
-        if (!window.electron?.checkForUpdates) return;
+        if (!onCheckUpdates) return;
         setCheckingUpdates(true);
         try {
-            const result = await window.electron.checkForUpdates();
-            setUpdateStatus(result);
-            setLastCheckedAt(new Date().toISOString());
-
-            if (result.error) {
-                setDialog({
-                    isOpen: true,
-                    type: 'alert',
-                    title: 'Verification impossible',
-                    message: result.error,
-                    onConfirm: () => setDialog(prev => ({ ...prev, isOpen: false }))
-                });
-                return;
-            }
-
-            if (result.updateAvailable) {
-                setDialog({
-                    isOpen: true,
-                    type: 'confirm',
-                    title: 'Mise a jour disponible',
-                    message: `Nouvelle version ${result.latestVersion} disponible (actuelle ${result.currentVersion}).`,
-                    onConfirm: async () => {
-                        const url = result.downloadUrl || result.releaseUrl;
-                        if (url && window.electron?.openExternal) {
-                            await window.electron.openExternal(url);
-                        }
-                        setDialog(prev => ({ ...prev, isOpen: false }));
-                    }
-                });
-            } else {
-                setDialog({
-                    isOpen: true,
-                    type: 'success',
-                    title: 'Tout est a jour',
-                    message: `Vous utilisez deja la derniere version (${result.currentVersion}).`,
-                    onConfirm: () => setDialog(prev => ({ ...prev, isOpen: false }))
-                });
-            }
+            await onCheckUpdates();
         } finally {
             setCheckingUpdates(false);
         }
@@ -159,7 +164,7 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
                                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-gray-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-gray-100 dark:border-slate-700">
                                     <div>
                                         <h3 className="text-sm font-black text-gray-700 dark:text-gray-200 uppercase tracking-tight">Mises a jour auto</h3>
-                                        <p className="text-xs text-gray-400 font-medium mt-1">Verifie automatiquement les releases au demarrage.</p>
+                                        <p className="text-xs text-gray-400 font-medium mt-1">Telecharge automatiquement les updates au demarrage.</p>
                                     </div>
                                     <button
                                         onClick={() => setAutoUpdatesEnabled(prev => !prev)}
@@ -175,11 +180,7 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
                                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                     <div className="space-y-2">
                                         <p className="text-xs text-gray-400 font-medium">
-                                            {updateStatus?.updateAvailable
-                                                ? `Nouvelle version: ${updateStatus.latestVersion}`
-                                                : updateStatus
-                                                    ? `Version actuelle: ${updateStatus.currentVersion}`
-                                                    : 'Aucune verification recente.'}
+                                            {getUpdateSummary()}
                                         </p>
                                         {lastCheckedAt && (
                                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
@@ -187,14 +188,24 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
                                             </p>
                                         )}
                                     </div>
-                                    <button
-                                        onClick={handleCheckUpdates}
-                                        disabled={checkingUpdates}
-                                        className="px-6 py-3 bg-gray-900 text-white font-black rounded-2xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 dark:shadow-none flex items-center justify-center gap-3 uppercase tracking-widest text-[10px] disabled:opacity-60 disabled:cursor-not-allowed"
-                                    >
-                                        <RefreshCcw size={16} className={checkingUpdates ? 'animate-spin' : ''} />
-                                        Verifier maintenant
-                                    </button>
+                                    <div className="flex flex-wrap gap-3">
+                                        {updateStatus?.status === 'downloaded' && onInstallUpdate && (
+                                            <button
+                                                onClick={() => onInstallUpdate()}
+                                                className="px-6 py-3 bg-emerald-600 text-white font-black rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 dark:shadow-none flex items-center justify-center gap-3 uppercase tracking-widest text-[10px]"
+                                            >
+                                                Installer maintenant
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={handleCheckUpdates}
+                                            disabled={checkingUpdates}
+                                            className="px-6 py-3 bg-gray-900 text-white font-black rounded-2xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 dark:shadow-none flex items-center justify-center gap-3 uppercase tracking-widest text-[10px] disabled:opacity-60 disabled:cursor-not-allowed"
+                                        >
+                                            <RefreshCcw size={16} className={checkingUpdates ? 'animate-spin' : ''} />
+                                            Verifier maintenant
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </section>

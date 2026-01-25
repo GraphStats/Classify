@@ -44,13 +44,13 @@ export interface Settings {
     autoUpdatesEnabled?: boolean;
 }
 
-export interface UpdateCheckResult {
-    currentVersion: string;
-    latestVersion: string;
-    updateAvailable: boolean;
-    releaseName?: string;
-    publishedAt?: string;
-    releaseUrl?: string;
-    downloadUrl?: string;
-    error?: string;
+export interface UpdateStatus {
+    status: 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error';
+    currentVersion?: string;
+    latestVersion?: string;
+    percent?: number;
+    bytesPerSecond?: number;
+    transferred?: number;
+    total?: number;
+    message?: string;
 }

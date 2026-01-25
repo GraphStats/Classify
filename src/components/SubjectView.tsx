@@ -153,6 +153,7 @@ export function SubjectView({ subject, onUpdateSubject, onDeleteCourse }: Subjec
                     message: result.error || 'Impossible d\'ouvrir le fichier.',
                     onConfirm: () => setDialog(prev => ({ ...prev, isOpen: false }))
                 });
+                return;
             }
         }
     };

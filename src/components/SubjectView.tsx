@@ -281,13 +281,13 @@ export function SubjectView({ subject, onUpdateSubject, onDeleteCourse }: Subjec
                                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                                     className="hover:scale-110 transition-transform bg-white dark:bg-slate-800 rounded-3xl p-4 shadow-xl dark:shadow-none border border-gray-100 dark:border-slate-700"
                                 >
-                                    <Emoji unified={subject.emoji} size={64} emojiStyle={EmojiStyle.APPLE} />
+                                    <Emoji unified={subject.emoji} size={64} emojiStyle={EmojiStyle.NATIVE} />
                                 </button>
                                 {showEmojiPicker && (
                                     <>
                                         <div className="fixed inset-0 z-40" onClick={() => setShowEmojiPicker(false)} />
                                         <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 shadow-2xl rounded-3xl overflow-hidden">
-                                            <EmojiPicker onEmojiClick={(data) => handleUpdateEmoji(data.unified)} emojiStyle={EmojiStyle.APPLE} />
+                                            <EmojiPicker onEmojiClick={(data) => handleUpdateEmoji(data.unified)} emojiStyle={EmojiStyle.NATIVE} />
                                         </div>
                                     </>
                                 )}

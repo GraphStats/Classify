@@ -1,7 +1,7 @@
 {
   "name": "classify",
   "private": true,
-  "version": "7.6.3",
+  "version": "7.6.4",
   "description": "Student Course Organizer",
   "author": "Drayko",
   "main": "dist-electron/main.js",
@@ -54,6 +54,8 @@
     }
   },
   "dependencies": {
+    "@fontsource/fredoka": "^5.2.10",
+    "@fontsource/outfit": "^5.2.8",
     "electron-updater": "^6.7.3",
     "emoji-picker-react": "^4.16.1",
     "lucide-react": "^0.562.0",

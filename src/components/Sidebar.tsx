@@ -105,7 +105,7 @@ export function Sidebar({
                                         }`}
                                 >
                                     <div className="flex-shrink-0 flex items-center justify-center">
-                                        <Emoji unified={subject.emoji} size={20} emojiStyle={EmojiStyle.APPLE} />
+                                        <Emoji unified={subject.emoji} size={20} emojiStyle={EmojiStyle.NATIVE} />
                                     </div>
                                     <span className="font-bold truncate flex-1 text-sm uppercase tracking-tight">{subject.name}</span>
                                     {subject.notes && subject.notes.trim() && (
@@ -131,7 +131,7 @@ export function Sidebar({
                                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                                     className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-white dark:bg-slate-700 rounded-xl border border-gray-200 dark:border-slate-600 hover:border-purple-300 transition-all shadow-sm"
                                 >
-                                    <Emoji unified={newSubjectEmoji} size={22} emojiStyle={EmojiStyle.APPLE} />
+                                    <Emoji unified={newSubjectEmoji} size={22} emojiStyle={EmojiStyle.NATIVE} />
                                 </button>
                                 {showEmojiPicker && (
                                     <>
@@ -143,7 +143,7 @@ export function Sidebar({
                                                     setShowEmojiPicker(false);
                                                 }}
                                                 theme={isDarkMode ? Theme.DARK : Theme.LIGHT}
-                                                emojiStyle={EmojiStyle.APPLE}
+                                                emojiStyle={EmojiStyle.NATIVE}
                                                 width={350}
                                                 height={400}
                                             />

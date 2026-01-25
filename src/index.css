@@ -22,12 +22,12 @@
 @layer base {
   body {
     @apply antialiased text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-950;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Outfit', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   }
 }
 
 .font-display {
-  font-family: 'Fredoka', sans-serif;
+  font-family: 'Fredoka', ui-rounded, 'Segoe UI', sans-serif;
 }
 
 /* Custom Scrollbar */

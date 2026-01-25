@@ -89,7 +89,7 @@ export function HomeView({ subjects, onSelectSubject, onOpenCourse }: HomeViewPr
                                             className="w-full flex items-center gap-4 p-3 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-xl transition-colors text-left"
                                         >
                                             <div className="w-10 h-10 bg-gray-50 dark:bg-slate-800 rounded-lg flex items-center justify-center text-xl">
-                                                <Emoji unified={result.subjectEmoji} size={24} emojiStyle={EmojiStyle.APPLE} />
+                                                <Emoji unified={result.subjectEmoji} size={24} emojiStyle={EmojiStyle.NATIVE} />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <h4 className="font-bold text-gray-800 dark:text-gray-200 line-clamp-2" title={result.name}>{result.name}</h4>
@@ -147,7 +147,7 @@ export function HomeView({ subjects, onSelectSubject, onOpenCourse }: HomeViewPr
                             <div key={s.name} className="space-y-3 group uppercase tracking-tight min-w-0">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 min-w-0">
-                                        <Emoji unified={s.emoji} size={16} emojiStyle={EmojiStyle.APPLE} />
+                                        <Emoji unified={s.emoji} size={16} emojiStyle={EmojiStyle.NATIVE} />
                                         <span className="font-bold text-gray-700 dark:text-gray-300 text-sm truncate">{s.name}</span>
                                     </div>
                                     <span className="text-xs font-black text-gray-400 flex-shrink-0 ml-2">{s.count} cours</span>
@@ -182,7 +182,7 @@ export function HomeView({ subjects, onSelectSubject, onOpenCourse }: HomeViewPr
                                     <div key={course.id} className="group bg-white dark:bg-slate-900/50 p-4 rounded-3xl border border-yellow-100 dark:border-yellow-900/20 bg-gradient-to-br from-white to-yellow-50/30 dark:from-slate-900/50 dark:to-yellow-900/5 shadow-sm hover:shadow-md transition-all flex flex-col gap-3 relative overflow-hidden">
                                         <div className="flex items-center justify-between">
                                             <div className="w-10 h-10 bg-white dark:bg-slate-800 rounded-lg flex items-center justify-center shadow-sm">
-                                                <Emoji unified={course.subjectEmoji} size={24} emojiStyle={EmojiStyle.APPLE} />
+                                                <Emoji unified={course.subjectEmoji} size={24} emojiStyle={EmojiStyle.NATIVE} />
                                             </div>
                                             <Star size={18} className="text-yellow-500 fill-yellow-500" />
                                         </div>
@@ -214,7 +214,7 @@ export function HomeView({ subjects, onSelectSubject, onOpenCourse }: HomeViewPr
                             {recentCourses.map(course => (
                                 <div key={course.id} className="group bg-white dark:bg-slate-900/50 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 hover:border-purple-200 dark:hover:border-purple-900/50 shadow-sm transition-all flex items-center gap-4">
                                     <div className="w-12 h-12 bg-gray-50 dark:bg-slate-800 group-hover:bg-purple-50 dark:group-hover:bg-purple-900/20 rounded-xl flex items-center justify-center transition-colors">
-                                        <Emoji unified={course.subjectEmoji} size={28} emojiStyle={EmojiStyle.APPLE} />
+                                        <Emoji unified={course.subjectEmoji} size={28} emojiStyle={EmojiStyle.NATIVE} />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className="font-bold text-gray-800 dark:text-gray-200 line-clamp-2" title={course.name}>{course.name}</h4>
@@ -249,7 +249,7 @@ export function HomeView({ subjects, onSelectSubject, onOpenCourse }: HomeViewPr
                                     onClick={() => onSelectSubject(subject.id)}
                                     className="p-4 bg-white dark:bg-slate-900/50 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-3xl border border-gray-100 dark:border-slate-800 hover:border-purple-200 shadow-sm transition-all text-left flex flex-col gap-3 group"
                                 >
-                                    <Emoji unified={subject.emoji} size={32} emojiStyle={EmojiStyle.APPLE} />
+                                    <Emoji unified={subject.emoji} size={32} emojiStyle={EmojiStyle.NATIVE} />
                                     <div>
                                         <h4 className="font-bold text-gray-800 dark:text-white truncate group-hover:text-purple-700 dark:group-hover:text-purple-400 transition-colors uppercase text-sm tracking-tight">{subject.name}</h4>
                                         <p className="text-[10px] text-gray-400 dark:text-gray-500 font-black uppercase tracking-widest mt-1">

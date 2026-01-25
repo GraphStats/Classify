@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { Subject } from '../types';
 import { Plus, Settings as SettingsIcon, Trash2, LayoutDashboard, Sun, Moon, Calendar as CalendarIcon, StickyNote } from 'lucide-react';
-import EmojiPicker, { Emoji, EmojiStyle, Theme } from 'emoji-picker-react';
+import EmojiPicker, { Emoji, Theme } from 'emoji-picker-react';
 import type { EmojiClickData } from 'emoji-picker-react';
+import { useEmojiStyle } from '../hooks/useEmojiStyle';
 
 interface SidebarProps {
     subjects: Subject[];
@@ -28,6 +29,7 @@ export function Sidebar({
     const [newSubjectName, setNewSubjectName] = useState('');
     const [newSubjectEmoji, setNewSubjectEmoji] = useState('1f4da');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const emojiStyle = useEmojiStyle();
 
     const handleAdd = (e: React.FormEvent) => {
         e.preventDefault();
@@ -105,7 +107,7 @@ export function Sidebar({
                                         }`}
                                 >
                                     <div className="flex-shrink-0 flex items-center justify-center">
-                                        <Emoji unified={subject.emoji} size={20} emojiStyle={EmojiStyle.NATIVE} />
+                                        <Emoji unified={subject.emoji} size={20} emojiStyle={emojiStyle} />
                                     </div>
                                     <span className="font-bold truncate flex-1 text-sm uppercase tracking-tight">{subject.name}</span>
                                     {subject.notes && subject.notes.trim() && (
@@ -131,7 +133,7 @@ export function Sidebar({
                                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                                     className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-white dark:bg-slate-700 rounded-xl border border-gray-200 dark:border-slate-600 hover:border-purple-300 transition-all shadow-sm"
                                 >
-                                    <Emoji unified={newSubjectEmoji} size={22} emojiStyle={EmojiStyle.NATIVE} />
+                                    <Emoji unified={newSubjectEmoji} size={22} emojiStyle={emojiStyle} />
                                 </button>
                                 {showEmojiPicker && (
                                     <>
@@ -143,7 +145,7 @@ export function Sidebar({
                                                     setShowEmojiPicker(false);
                                                 }}
                                                 theme={isDarkMode ? Theme.DARK : Theme.LIGHT}
-                                                emojiStyle={EmojiStyle.NATIVE}
+                                                emojiStyle={emojiStyle}
                                                 width={350}
                                                 height={400}
                                             />

@@ -4,7 +4,8 @@ import {
     ChevronLeft, ChevronRight, Calendar as CalendarIcon,
     Plus, CheckCircle2, Circle, Clock, Trash2, LayoutGrid, List, X
 } from 'lucide-react';
-import { Emoji, EmojiStyle } from 'emoji-picker-react';
+import { Emoji } from 'emoji-picker-react';
+import { useEmojiStyle } from '../hooks/useEmojiStyle';
 
 interface CalendarViewProps {
     subjects: Subject[];
@@ -16,6 +17,7 @@ export function CalendarView({ subjects, events, onSaveEvents }: CalendarViewPro
     const [viewDate, setViewDate] = useState(new Date());
     const [isAddingEvent, setIsAddingEvent] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const emojiStyle = useEmojiStyle();
 
     // Form states
     const [selectedSubjectId, setSelectedSubjectId] = useState('');
@@ -162,7 +164,7 @@ export function CalendarView({ subjects, events, onSaveEvents }: CalendarViewPro
                                                                         }`}
                                                                     title={event.title}
                                                                 >
-                                                                    {subject && <Emoji unified={subject.emoji} size={12} emojiStyle={EmojiStyle.NATIVE} />}
+                                                                    {subject && <Emoji unified={subject.emoji} size={12} emojiStyle={emojiStyle} />}
                                                                     {event.title}
                                                                 </div>
                                                             );
@@ -191,7 +193,7 @@ export function CalendarView({ subjects, events, onSaveEvents }: CalendarViewPro
                                                 <div key={event.id} className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-slate-800 flex items-center justify-between group hover:border-purple-200 dark:hover:border-purple-900/50 transition-all animate-fade-in">
                                                     <div className="flex items-center gap-6">
                                                         <div className="w-16 h-16 bg-gray-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-2xl shadow-sm">
-                                                            {subject && <Emoji unified={subject.emoji} size={32} emojiStyle={EmojiStyle.NATIVE} />}
+                                                            {subject && <Emoji unified={subject.emoji} size={32} emojiStyle={emojiStyle} />}
                                                         </div>
                                                         <div>
                                                             <div className="flex items-center gap-3 mb-1">
@@ -255,7 +257,7 @@ export function CalendarView({ subjects, events, onSaveEvents }: CalendarViewPro
                                             <div key={event.id} className="group p-4 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-transparent hover:border-blue-100 dark:hover:border-blue-900/50 transition-all">
                                                 <div className="flex items-start justify-between gap-3 mb-2">
                                                     <div className="flex items-center gap-2">
-                                                        {subject && <div className="p-1.5 bg-white dark:bg-slate-800 rounded-lg shadow-sm"><Emoji unified={subject.emoji} size={16} emojiStyle={EmojiStyle.NATIVE} /></div>}
+                                                        {subject && <div className="p-1.5 bg-white dark:bg-slate-800 rounded-lg shadow-sm"><Emoji unified={subject.emoji} size={16} emojiStyle={emojiStyle} /></div>}
                                                         <h4 className="text-xs font-black text-gray-800 dark:text-gray-200 uppercase tracking-tight truncate max-w-[120px]">{event.title}</h4>
                                                     </div>
                                                     <button onClick={() => handleDeleteEvent(event.id)} className="p-1.5 text-gray-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
@@ -310,7 +312,7 @@ export function CalendarView({ subjects, events, onSaveEvents }: CalendarViewPro
                                             onClick={() => setSelectedSubjectId(s.id)}
                                             className={`p-3 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${selectedSubjectId === s.id ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-50 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50'}`}
                                         >
-                                            <Emoji unified={s.emoji} size={24} emojiStyle={EmojiStyle.NATIVE} />
+                                            <Emoji unified={s.emoji} size={24} emojiStyle={emojiStyle} />
                                             <span className="text-[8px] font-black uppercase truncate w-full text-center">{s.name}</span>
                                         </button>
                                     ))}

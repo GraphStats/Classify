@@ -112,6 +112,9 @@ jobs:
           for f in dist-exe/*.blockmap; do
             mv "$f" "${f//Mac.arm64/Mac.ARM}"
           done
+          if [ -f dist-exe/latest-mac.yml ]; then
+            mv dist-exe/latest-mac.yml dist-exe/latest-mac-arm64.yml
+          fi
           python - <<'PY'
           from pathlib import Path
           for path in Path("dist-exe").glob("latest-mac*.yml"):
@@ -196,7 +199,7 @@ jobs:
           VERSION="${{ steps.package-version.outputs.version }}"
           TAG="v$VERSION"
           shopt -s nullglob globstar
-          find artifacts -name 'builder-debug.yml' -o -name 'builder-effective-config.yml' -delete
+          find artifacts \( -name 'builder-debug.yml' -o -name 'builder-effective-config.yml' \) -delete
           files=(artifacts/**/*.exe artifacts/**/*.dmg artifacts/**/*.AppImage artifacts/**/*.yml artifacts/**/*.blockmap)
           if [ ${#files[@]} -eq 0 ]; then
             echo "No release artifacts found to upload."

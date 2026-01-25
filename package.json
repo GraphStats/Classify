@@ -1,7 +1,7 @@
 {
   "name": "classify",
   "private": true,
-  "version": "7.5.7",
+  "version": "7.5.8",
   "description": "Student Course Organizer",
   "author": "Drayko",
   "main": "dist-electron/main.js",
@@ -9,6 +9,7 @@
     "dev": "concurrently \"tsc -p tsconfig.electron.json -w\" \"vite\" \"wait-on tcp:5173 && electron .\"",
     "build": "tsc -p tsconfig.electron.json && vite build && electron-builder",
     "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.electron.json --noEmit",
     "preview": "vite preview"
   },
   "build": {

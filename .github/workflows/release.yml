@@ -6,7 +6,47 @@ on:
       - main
 
 jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Verify version is new
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          LATEST_JSON=$(curl -sSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/repos/GraphStats/Classify/releases/latest || true)
+          LATEST=$(echo "$LATEST_JSON" | jq -r '.tag_name // empty')
+          LATEST=${LATEST#v}
+          echo "package.json version: $VERSION"
+          echo "latest release tag: ${LATEST:-none}"
+          if [ -n "$LATEST" ] && [ "$LATEST" = "$VERSION" ]; then
+            echo "Version $VERSION is already released. Bump version before building."
+            exit 1
+          fi
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
   build:
+    needs: preflight
     strategy:
       matrix:
         include:

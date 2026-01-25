@@ -7,8 +7,8 @@ interface SettingsViewProps {
     settings: Settings;
     onSave: (settings: Settings) => void;
     updateStatus?: UpdateStatus | null;
-    onCheckUpdates?: () => Promise<any> | void;
-    onInstallUpdate?: () => Promise<any> | void;
+    onCheckUpdates?: () => Promise<void> | void;
+    onInstallUpdate?: () => Promise<void> | void;
 }
 
 const SUPPORTED_EXTS = ['.docx', '.doc', '.md', '.txt', '.odt', '.pdf'];

@@ -19,7 +19,7 @@ function App() {
   const [activeSubjectId, setActiveSubjectId] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const isDarkMode = settings.theme === 'dark';
   const [isDragging, setIsDragging] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
   const didCheckUpdates = useRef(false);
@@ -42,17 +42,31 @@ function App() {
     onConfirm: () => { }
   });
 
-  // Sync theme from settings
-  useEffect(() => {
-    if (settings.theme) {
-      setIsDarkMode(settings.theme === 'dark');
-    }
-  }, [settings.theme]);
-
   useEffect(() => {
     if (!window.electron?.onUpdateStatus) return;
     const unsubscribe = window.electron.onUpdateStatus((status: UpdateStatus) => {
       setUpdateStatus(status);
+
+      if (status.status === 'downloaded') {
+        const version = status.latestVersion || 'update';
+        if (lastNotifiedUpdate.current === version) return;
+        lastNotifiedUpdate.current = version;
+
+        setDialog({
+          isOpen: true,
+          type: 'confirm',
+          title: 'Mise a jour prete',
+          message: `La version ${status.latestVersion || ''} est telechargee. Redemarrer pour installer ?`,
+          confirmLabel: 'Installer et redemarrer',
+          cancelLabel: 'Plus tard',
+          onConfirm: async () => {
+            if (window.electron?.installUpdate) {
+              await window.electron.installUpdate();
+            }
+            setDialog(prev => ({ ...prev, isOpen: false }));
+          }
+        });
+      }
     });
     return unsubscribe;
   }, []);
@@ -70,31 +84,8 @@ function App() {
     });
   }, [loading, settings.autoUpdatesEnabled]);
 
-  useEffect(() => {
-    if (updateStatus?.status !== 'downloaded') return;
-    const version = updateStatus.latestVersion || 'update';
-    if (lastNotifiedUpdate.current === version) return;
-    lastNotifiedUpdate.current = version;
-
-    setDialog({
-      isOpen: true,
-      type: 'confirm',
-      title: 'Mise a jour prete',
-      message: `La version ${updateStatus.latestVersion || ''} est telechargee. Redemarrer pour installer ?`,
-      confirmLabel: 'Installer et redemarrer',
-      cancelLabel: 'Plus tard',
-      onConfirm: async () => {
-        if (window.electron?.installUpdate) {
-          await window.electron.installUpdate();
-        }
-        setDialog(prev => ({ ...prev, isOpen: false }));
-      }
-    });
-  }, [updateStatus?.status, updateStatus?.latestVersion]);
-
   const toggleTheme = () => {
     const nextMode = !isDarkMode;
-    setIsDarkMode(nextMode);
     updateSettings({ ...settings, theme: nextMode ? 'dark' : 'light' });
   };
 
@@ -193,7 +184,8 @@ function App() {
     }
 
     const newCourses: Course[] = files.map(file => {
-      const path = window.electron?.getFilePath ? window.electron.getFilePath(file) : (file as any).path;
+      const fileWithPath = file as File & { path?: string };
+      const path = window.electron?.getFilePath ? window.electron.getFilePath(file) : fileWithPath.path;
       console.log('Dropped file:', file.name, 'Path:', path);
       return {
         id: Math.random().toString(36).substr(2, 9),
@@ -240,8 +232,8 @@ function App() {
           settings={settings}
           onSave={updateSettings}
           updateStatus={updateStatus}
-          onCheckUpdates={() => window.electron?.checkForUpdates?.()}
-          onInstallUpdate={() => window.electron?.installUpdate?.()}
+          onCheckUpdates={async () => { await window.electron?.checkForUpdates?.(); }}
+          onInstallUpdate={async () => { await window.electron?.installUpdate?.(); }}
         />
       );
     }

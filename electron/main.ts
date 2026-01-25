@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import fs from 'fs';
@@ -8,16 +8,23 @@ const userDataPath = app.getPath('userData');
 const settingsPath = path.join(userDataPath, 'settings.json');
 
 // Helper to load settings
-const DEFAULT_SETTINGS = {
+type AppSettings = {
+    editors: Record<string, string>;
+    theme?: 'light' | 'dark' | 'auto';
+    userName?: string;
+    autoUpdatesEnabled?: boolean;
+};
+
+const DEFAULT_SETTINGS: AppSettings = {
     editors: {},
     autoUpdatesEnabled: true
 };
 
-function loadSettings() {
+function loadSettings(): AppSettings {
     try {
         if (fs.existsSync(settingsPath)) {
             const data = fs.readFileSync(settingsPath, 'utf8');
-            const parsed = JSON.parse(data);
+            const parsed = JSON.parse(data) as Partial<AppSettings>;
             return {
                 ...DEFAULT_SETTINGS,
                 ...parsed,
@@ -30,7 +37,7 @@ function loadSettings() {
     return { ...DEFAULT_SETTINGS }; // { ".md": "C:\\...", ".docx": "..." }
 }
 
-function saveSettings(settings: any) {
+function saveSettings(settings: AppSettings) {
     try {
         fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
         return true;
@@ -62,11 +69,6 @@ const sendUpdateStatus = (status: UpdateStatus) => {
 };
 
 const initAutoUpdater = () => {
-    autoUpdater.setFeedURL({
-        provider: 'github',
-        owner: 'GraphStats',
-        repo: 'Classify'
-    } as any);
     autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
 
@@ -158,7 +160,7 @@ ipcMain.handle('get-settings', () => {
     return loadSettings();
 });
 
-ipcMain.handle('save-settings', (_, settings) => {
+ipcMain.handle('save-settings', (_, settings: AppSettings) => {
     return saveSettings(settings);
 });
 
@@ -180,11 +182,12 @@ ipcMain.handle('check-for-updates', async () => {
             currentVersion: getCurrentVersion()
         } as UpdateStatus;
         return status;
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
         const status = {
             status: 'error',
             currentVersion: getCurrentVersion(),
-            message: error?.message || 'Impossible de verifier les mises a jour.'
+            message: message || 'Impossible de verifier les mises a jour.'
         } as UpdateStatus;
         sendUpdateStatus(status);
         return status;
@@ -196,8 +199,8 @@ ipcMain.handle('install-update', async () => {
     try {
         autoUpdater.quitAndInstall();
         return true;
-    } catch (e) {
-        console.error('Failed to install update', e);
+    } catch (error: unknown) {
+        console.error('Failed to install update', error);
         return false;
     }
 });
@@ -208,8 +211,8 @@ ipcMain.handle('open-external', async (_, url: string) => {
     try {
         await shell.openExternal(url);
         return true;
-    } catch (e) {
-        console.error('Failed to open external url', e);
+    } catch (error: unknown) {
+        console.error('Failed to open external url', error);
         return false;
     }
 });
@@ -261,8 +264,9 @@ ipcMain.handle('open-file', async (_, filePath) => {
             } else {
                 console.warn(`[IPC] Custom editor path not found: ${editorPath}. Falling back to system default.`);
             }
-        } catch (e: any) {
-            console.error(`[IPC] Failed to open with custom editor: ${e.message}`);
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            console.error(`[IPC] Failed to open with custom editor: ${message}`);
         }
     }
 
@@ -277,14 +281,13 @@ ipcMain.handle('open-file', async (_, filePath) => {
             await shell.openExternal(fileUrl);
         }
         return { success: true };
-    } catch (e: any) {
-        console.error(`[IPC] Failed to open file: ${e.message}`);
+    } catch (error: unknown) {
+        console.error(`[IPC] Failed to open file: ${error instanceof Error ? error.message : String(error)}`);
         return { success: false, error: 'Impossible d\'ouvrir le fichier avec l\'application par défaut.' };
     }
 });
 
 // Native file dialog to pick file
-const { dialog } = require('electron');
 ipcMain.handle('select-file', async () => {
     if (!mainWindow) return null;
     const result = await dialog.showOpenDialog(mainWindow, {
@@ -320,7 +323,7 @@ ipcMain.handle('detect-apps', async () => {
         'C:\\Windows\\notepad.exe'
     ];
 
-    const detected = [];
+    const detected: { name: string; path: string }[] = [];
     for (const p of commonPaths) {
         if (fs.existsSync(p)) {
             detected.push({
@@ -338,15 +341,17 @@ ipcMain.handle('detect-apps', async () => {
             ps.stdout.on('data', (d) => data += d);
             ps.on('close', () => resolve(data));
         });
-        const apps = JSON.parse(psOutput);
-        const filtered = apps.filter((a: any) =>
-            a.Name.match(/word|notepad|obsidian|code|office|writer|text|edit/i)
+        type StartApp = { Name?: string; AppID?: string };
+        const parsed = JSON.parse(psOutput) as StartApp | StartApp[];
+        const apps = Array.isArray(parsed) ? parsed : [parsed];
+        const filtered = apps.filter((a) =>
+            typeof a?.Name === 'string' && a.Name.match(/word|notepad|obsidian|code|office|writer|text|edit/i)
         );
 
         for (const a of filtered) {
             // Check if we already have this app by name
-            if (!detected.find(d => d.name.toLowerCase() === a.Name.toLowerCase())) {
-                detected.push({ name: a.Name, path: 'shell:AppsFolder\\' + a.AppID });
+            if (a.Name && !detected.find(d => d.name.toLowerCase() === a.Name!.toLowerCase())) {
+                detected.push({ name: a.Name, path: 'shell:AppsFolder\\' + (a.AppID || '') });
             }
         }
     } catch (e) {
@@ -355,3 +360,4 @@ ipcMain.handle('detect-apps', async () => {
 
     return detected;
 });
+

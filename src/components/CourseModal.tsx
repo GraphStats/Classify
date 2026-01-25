@@ -27,13 +27,13 @@ export function CourseModal({ isOpen, onClose, onSave }: CourseModalProps) {
         } else {
             const input = document.createElement('input');
             input.type = 'file';
-            input.onchange = (e: any) => {
-                if (e.target.files?.length) {
-                    const file = e.target.files[0];
-                    setFilePath(file.name);
-                    if (!name) {
-                        setName(file.name.split('.').slice(0, -1).join('.') || file.name);
-                    }
+            input.onchange = (event: Event) => {
+                const target = event.target as HTMLInputElement | null;
+                if (!target?.files?.length) return;
+                const file = target.files[0];
+                setFilePath(file.name);
+                if (!name) {
+                    setName(file.name.split('.').slice(0, -1).join('.') || file.name);
                 }
             };
             input.click();

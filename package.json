@@ -37,6 +37,13 @@
       "icon": "public/icon-512.png",
       "artifactName": "Classify.Setup.Linux.${version}.AppImage"
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "GraphStats",
+        "repo": "Classify"
+      }
+    ],
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true

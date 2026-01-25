@@ -3,9 +3,9 @@ export { };
 declare global {
     interface Window {
         electron: {
-            getSettings: () => Promise<any>;
-            saveSettings: (settings: any) => Promise<boolean>;
-            openFile: (path: string) => Promise<any>;
+            getSettings: () => Promise<import('./types').Settings>;
+            saveSettings: (settings: import('./types').Settings) => Promise<boolean>;
+            openFile: (path: string) => Promise<{ success: boolean; error?: string }>;
             selectFile: () => Promise<string | null>;
             selectEditorPath: () => Promise<string | null>;
             detectApps: () => Promise<{ name: string; path: string }[]>;

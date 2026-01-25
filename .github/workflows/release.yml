@@ -180,19 +180,31 @@ jobs:
         with:
           path: artifacts
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.package-version.outputs.version }}
-          name: v${{ steps.package-version.outputs.version }}
-          body: ${{ github.event.head_commit.message }}
-          draft: false
-          prerelease: false
-          files: |
-            artifacts/**/*.exe
-            artifacts/**/*.dmg
-            artifacts/**/*.AppImage
-            artifacts/**/*.yml
-            artifacts/**/*.blockmap
+      - name: Create or update release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.package-version.outputs.version }}"
+          TAG="v$VERSION"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "Release $TAG already exists."
+          else
+            gh release create "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "$TAG" \
+              --notes "${{ github.event.head_commit.message }}"
+          fi
+
+      - name: Upload release assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.package-version.outputs.version }}"
+          TAG="v$VERSION"
+          shopt -s nullglob globstar
+          files=(artifacts/**/*.exe artifacts/**/*.dmg artifacts/**/*.AppImage artifacts/**/*.yml artifacts/**/*.blockmap)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No release artifacts found to upload."
+            exit 1
+          fi
+          gh release upload "$TAG" "${files[@]}" --repo "$GITHUB_REPOSITORY" --clobber

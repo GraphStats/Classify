@@ -54,8 +54,9 @@ export function SubjectView({ subject, onUpdateSubject, onDeleteCourse }: Subjec
     });
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLocalNotes(subject.notes || '');
-    }, [subject.id]);
+    }, [subject.id, subject.notes]);
 
     const handleSaveNotes = () => {
         onUpdateSubject({ ...subject, notes: localNotes });

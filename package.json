@@ -7,7 +7,7 @@
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "concurrently \"tsc -p tsconfig.electron.json -w\" \"vite\" \"wait-on tcp:5173 && electron .\"",
-    "build": "tsc -p tsconfig.electron.json && vite build && electron-builder",
+    "build": "tsc -p tsconfig.electron.json && vite build && electron-builder --publish=never",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.electron.json --noEmit",
     "preview": "vite preview"

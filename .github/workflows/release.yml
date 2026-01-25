@@ -196,6 +196,7 @@ jobs:
           VERSION="${{ steps.package-version.outputs.version }}"
           TAG="v$VERSION"
           shopt -s nullglob globstar
+          find artifacts -name 'builder-debug.yml' -o -name 'builder-effective-config.yml' -delete
           files=(artifacts/**/*.exe artifacts/**/*.dmg artifacts/**/*.AppImage artifacts/**/*.yml artifacts/**/*.blockmap)
           if [ ${#files[@]} -eq 0 ]; then
             echo "No release artifacts found to upload."

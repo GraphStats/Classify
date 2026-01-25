@@ -9,7 +9,19 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest, macos-latest]
+        include:
+          - os: windows-latest
+            platform: windows
+            arch: x64
+          - os: macos-13
+            platform: mac
+            arch: x64
+          - os: macos-latest
+            platform: mac
+            arch: arm64
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
@@ -27,24 +39,44 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Build Application
-        run: npm run build
+      - name: Build Application (Windows)
+        if: matrix.platform == 'windows'
+        run: npm run build -- --win --${{ matrix.arch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Application (macOS)
+        if: matrix.platform == 'mac'
+        run: npm run build -- --mac --${{ matrix.arch }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Application (Linux)
+        if: matrix.platform == 'linux'
+        run: npm run build -- --linux --${{ matrix.arch }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Windows Artifact
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform == 'windows'
         uses: actions/upload-artifact@v4
         with:
-          name: build-windows
+          name: build-windows-x64
           path: dist-exe/*.exe
 
       - name: Upload macOS Artifact
-        if: matrix.os == 'macos-latest'
+        if: matrix.platform == 'mac'
         uses: actions/upload-artifact@v4
         with:
-          name: build-macos
+          name: build-macos-${{ matrix.arch }}
           path: dist-exe/*.dmg
+
+      - name: Upload Linux Artifact
+        if: matrix.platform == 'linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-linux-${{ matrix.arch }}
+          path: dist-exe/*.AppImage
 
   release:
     runs-on: ubuntu-latest
@@ -78,5 +110,6 @@ jobs:
           files: |
             artifacts/**/*.exe
             artifacts/**/*.dmg
+            artifacts/**/*.AppImage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -56,8 +56,8 @@ function App() {
           isOpen: true,
           type: 'confirm',
           title: 'Mise a jour prete',
-          message: `La version ${status.latestVersion || ''} est telechargee. Redemarrer pour installer ?`,
-          confirmLabel: 'Installer et redemarrer',
+          message: `La version ${status.latestVersion || ''} est telechargee. Elle s'appliquera en arriere-plan au redemarrage.`,
+          confirmLabel: 'Redemarrer maintenant',
           cancelLabel: 'Plus tard',
           onConfirm: async () => {
             if (window.electron?.installUpdate) {

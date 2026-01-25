@@ -197,7 +197,8 @@ ipcMain.handle('check-for-updates', async () => {
 ipcMain.handle('install-update', async () => {
     if (!app.isPackaged) return false;
     try {
-        autoUpdater.quitAndInstall();
+        // Silent install to avoid showing the installer UI.
+        autoUpdater.quitAndInstall(true, true);
         return true;
     } catch (error: unknown) {
         console.error('Failed to install update', error);

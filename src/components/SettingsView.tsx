@@ -80,7 +80,7 @@ export function SettingsView({ settings, onSave, updateStatus, onCheckUpdates, o
             case 'downloading':
                 return `Telechargement: ${updateStatus.percent ?? 0}%`;
             case 'downloaded':
-                return `Mise a jour prete: ${updateStatus.latestVersion || ''}`.trim();
+                return `Mise a jour prete: ${updateStatus.latestVersion || ''} (s'appliquera au redemarrage)`.trim();
             case 'error':
                 return updateStatus.message || 'Erreur de mise a jour.';
             default:
@@ -194,7 +194,7 @@ export function SettingsView({ settings, onSave, updateStatus, onCheckUpdates, o
                                                 onClick={() => onInstallUpdate()}
                                                 className="px-6 py-3 bg-emerald-600 text-white font-black rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 dark:shadow-none flex items-center justify-center gap-3 uppercase tracking-widest text-[10px]"
                                             >
-                                                Installer maintenant
+                                                Redemarrer pour appliquer
                                             </button>
                                         )}
                                         <button

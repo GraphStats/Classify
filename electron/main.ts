@@ -2,21 +2,32 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { spawn } from 'child_process';
+import https from 'https';
 
 const userDataPath = app.getPath('userData');
 const settingsPath = path.join(userDataPath, 'settings.json');
 
 // Helper to load settings
+const DEFAULT_SETTINGS = {
+    editors: {},
+    autoUpdatesEnabled: true
+};
+
 function loadSettings() {
     try {
         if (fs.existsSync(settingsPath)) {
             const data = fs.readFileSync(settingsPath, 'utf8');
-            return JSON.parse(data);
+            const parsed = JSON.parse(data);
+            return {
+                ...DEFAULT_SETTINGS,
+                ...parsed,
+                editors: parsed?.editors || {}
+            };
         }
     } catch (e) {
         console.error('Failed to load settings', e);
     }
-    return { editors: {} }; // { ".md": "C:\\...", ".docx": "..." }
+    return { ...DEFAULT_SETTINGS }; // { ".md": "C:\\...", ".docx": "..." }
 }
 
 function saveSettings(settings: any) {
@@ -30,6 +41,115 @@ function saveSettings(settings: any) {
 }
 
 let mainWindow: BrowserWindow | null = null;
+
+type ReleaseAsset = {
+    name: string;
+    size: number;
+    browser_download_url: string;
+    content_type?: string;
+};
+
+type ReleaseInfo = {
+    tag_name?: string;
+    name?: string;
+    html_url?: string;
+    published_at?: string;
+    assets?: ReleaseAsset[];
+};
+
+type UpdateCheckResult = {
+    currentVersion: string;
+    latestVersion: string;
+    updateAvailable: boolean;
+    releaseName?: string;
+    publishedAt?: string;
+    releaseUrl?: string;
+    downloadUrl?: string;
+    error?: string;
+};
+
+function extractVersion(raw?: string) {
+    if (!raw) return null;
+    const match = raw.match(/\d+(?:\.\d+){1,3}/);
+    return match ? match[0] : null;
+}
+
+function compareVersions(a: string, b: string) {
+    const aParts = a.split('.').map(n => parseInt(n, 10));
+    const bParts = b.split('.').map(n => parseInt(n, 10));
+    const length = Math.max(aParts.length, bParts.length);
+    for (let i = 0; i < length; i += 1) {
+        const aVal = aParts[i] ?? 0;
+        const bVal = bParts[i] ?? 0;
+        if (aVal > bVal) return 1;
+        if (aVal < bVal) return -1;
+    }
+    return 0;
+}
+
+function fetchLatestRelease(): Promise<ReleaseInfo> {
+    return new Promise((resolve, reject) => {
+        const req = https.request(
+            {
+                hostname: 'api.github.com',
+                path: '/repos/GraphStats/Classify/releases/latest',
+                method: 'GET',
+                headers: {
+                    'User-Agent': 'Classify',
+                    'Accept': 'application/vnd.github+json'
+                }
+            },
+            (res) => {
+                let data = '';
+                res.on('data', (chunk) => (data += chunk));
+                res.on('end', () => {
+                    try {
+                        if (res.statusCode && res.statusCode >= 400) {
+                            reject(new Error(`GitHub API error: ${res.statusCode}`));
+                            return;
+                        }
+                        const parsed = JSON.parse(data);
+                        resolve(parsed);
+                    } catch (e) {
+                        reject(e);
+                    }
+                });
+            }
+        );
+
+        req.on('error', reject);
+        req.end();
+    });
+}
+
+async function checkForUpdates(): Promise<UpdateCheckResult> {
+    const currentVersion = app.getVersion();
+    try {
+        const release = await fetchLatestRelease();
+        const latestVersion = extractVersion(release.tag_name) || extractVersion(release.name) || currentVersion;
+        const updateAvailable = compareVersions(currentVersion, latestVersion) < 0;
+        const assets = release.assets || [];
+        const preferredAsset = assets.find(a => a.name?.toLowerCase().endsWith('.exe')) || assets[0];
+
+        return {
+            currentVersion,
+            latestVersion,
+            updateAvailable,
+            releaseName: release.name || release.tag_name,
+            publishedAt: release.published_at,
+            releaseUrl: release.html_url,
+            downloadUrl: preferredAsset?.browser_download_url
+        };
+    } catch (e: any) {
+        console.error('Update check failed', e);
+        return {
+            currentVersion,
+            latestVersion: currentVersion,
+            updateAvailable: false,
+            error: 'Impossible de contacter GitHub pour verifier les mises a jour.'
+        };
+    }
+}
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -77,6 +197,22 @@ ipcMain.handle('get-settings', () => {
 
 ipcMain.handle('save-settings', (_, settings) => {
     return saveSettings(settings);
+});
+
+ipcMain.handle('check-for-updates', async () => {
+    return await checkForUpdates();
+});
+
+ipcMain.handle('open-external', async (_, url: string) => {
+    if (!url || typeof url !== 'string') return false;
+    if (!/^https?:\/\//i.test(url)) return false;
+    try {
+        await shell.openExternal(url);
+        return true;
+    } catch (e) {
+        console.error('Failed to open external url', e);
+        return false;
+    }
 });
 
 ipcMain.handle('open-file', async (_, filePath) => {

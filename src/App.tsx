@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useData } from './hooks/useData';
 import { Sidebar } from './components/Sidebar';
 import { SubjectView } from './components/SubjectView';
@@ -7,7 +7,7 @@ import { CalendarView } from './components/CalendarView';
 import { HomeView } from './components/HomeView';
 import { UploadCloud } from 'lucide-react';
 import { CustomDialog } from './components/CustomDialog';
-import type { Subject, Course } from './types';
+import type { Subject, Course, UpdateCheckResult } from './types';
 
 function App() {
   const {
@@ -21,6 +21,7 @@ function App() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const didCheckUpdates = useRef(false);
 
   // Dialog state
   const [dialog, setDialog] = useState<{
@@ -43,6 +44,34 @@ function App() {
       setIsDarkMode(settings.theme === 'dark');
     }
   }, [settings.theme]);
+
+  useEffect(() => {
+    if (loading) return;
+    if (didCheckUpdates.current) return;
+    if (settings.autoUpdatesEnabled === undefined) return;
+    if (settings.autoUpdatesEnabled === false) return;
+    if (!window.electron?.checkForUpdates) return;
+
+    didCheckUpdates.current = true;
+    window.electron.checkForUpdates().then((result: UpdateCheckResult) => {
+      if (!result?.updateAvailable) return;
+      setDialog({
+        isOpen: true,
+        type: 'confirm',
+        title: 'Mise a jour disponible',
+        message: `Une nouvelle version (${result.latestVersion}) est disponible. Vous utilisez ${result.currentVersion}.`,
+        onConfirm: async () => {
+          const url = result.downloadUrl || result.releaseUrl;
+          if (url && window.electron?.openExternal) {
+            await window.electron.openExternal(url);
+          }
+          setDialog(prev => ({ ...prev, isOpen: false }));
+        }
+      });
+    }).catch(() => {
+      // Silent: avoid blocking the user on startup.
+    });
+  }, [loading, settings.autoUpdatesEnabled]);
 
   const toggleTheme = () => {
     const nextMode = !isDarkMode;

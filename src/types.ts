@@ -41,4 +41,16 @@ export interface Settings {
     editors: Record<string, string>;
     theme?: 'light' | 'dark' | 'auto';
     userName?: string;
+    autoUpdatesEnabled?: boolean;
+}
+
+export interface UpdateCheckResult {
+    currentVersion: string;
+    latestVersion: string;
+    updateAvailable: boolean;
+    releaseName?: string;
+    publishedAt?: string;
+    releaseUrl?: string;
+    downloadUrl?: string;
+    error?: string;
 }

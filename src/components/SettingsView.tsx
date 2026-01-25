@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import type { Settings } from '../types';
-import { Save, Sparkles, Sliders, Layout, Monitor } from 'lucide-react';
+import type { Settings, UpdateCheckResult } from '../types';
+import { Save, Sparkles, Layout, Monitor, RefreshCcw, Download } from 'lucide-react';
 import { CustomDialog } from './CustomDialog';
 
 interface SettingsViewProps {
@@ -14,6 +14,10 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
     const [editors, setEditors] = useState<Record<string, string>>(settings.editors || {});
     const [detectedApps, setDetectedApps] = useState<{ name: string; path: string }[]>([]);
     const [scanning, setScanning] = useState(false);
+    const [autoUpdatesEnabled, setAutoUpdatesEnabled] = useState(settings.autoUpdatesEnabled ?? true);
+    const [checkingUpdates, setCheckingUpdates] = useState(false);
+    const [updateStatus, setUpdateStatus] = useState<UpdateCheckResult | null>(null);
+    const [lastCheckedAt, setLastCheckedAt] = useState<string | null>(null);
 
     const [dialog, setDialog] = useState<{
         isOpen: boolean;
@@ -32,6 +36,10 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
     useEffect(() => {
         handleDetectApps();
     }, []);
+
+    useEffect(() => {
+        setAutoUpdatesEnabled(settings.autoUpdatesEnabled ?? true);
+    }, [settings.autoUpdatesEnabled]);
 
     const handleDetectApps = async () => {
         if (window.electron) {
@@ -59,7 +67,7 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
     };
 
     const handleSave = () => {
-        onSave({ ...settings, editors });
+        onSave({ ...settings, editors, autoUpdatesEnabled });
         setDialog({
             isOpen: true,
             type: 'success',
@@ -67,6 +75,53 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
             message: 'Vos préférences ont été enregistrées avec succès.',
             onConfirm: () => setDialog(prev => ({ ...prev, isOpen: false }))
         });
+    };
+
+    const handleCheckUpdates = async () => {
+        if (!window.electron?.checkForUpdates) return;
+        setCheckingUpdates(true);
+        try {
+            const result = await window.electron.checkForUpdates();
+            setUpdateStatus(result);
+            setLastCheckedAt(new Date().toISOString());
+
+            if (result.error) {
+                setDialog({
+                    isOpen: true,
+                    type: 'alert',
+                    title: 'Verification impossible',
+                    message: result.error,
+                    onConfirm: () => setDialog(prev => ({ ...prev, isOpen: false }))
+                });
+                return;
+            }
+
+            if (result.updateAvailable) {
+                setDialog({
+                    isOpen: true,
+                    type: 'confirm',
+                    title: 'Mise a jour disponible',
+                    message: `Nouvelle version ${result.latestVersion} disponible (actuelle ${result.currentVersion}).`,
+                    onConfirm: async () => {
+                        const url = result.downloadUrl || result.releaseUrl;
+                        if (url && window.electron?.openExternal) {
+                            await window.electron.openExternal(url);
+                        }
+                        setDialog(prev => ({ ...prev, isOpen: false }));
+                    }
+                });
+            } else {
+                setDialog({
+                    isOpen: true,
+                    type: 'success',
+                    title: 'Tout est a jour',
+                    message: `Vous utilisez deja la derniere version (${result.currentVersion}).`,
+                    onConfirm: () => setDialog(prev => ({ ...prev, isOpen: false }))
+                });
+            }
+        } finally {
+            setCheckingUpdates(false);
+        }
     };
 
     return (
@@ -89,6 +144,61 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
                     {/* Main Editors Config */}
                     <div className="lg:col-span-2 space-y-8">
+                        <section className="bg-white dark:bg-slate-900 rounded-[32px] p-8 shadow-sm border border-gray-100 dark:border-slate-800">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center">
+                                    <Download size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tight">Mises a jour</h2>
+                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Suivi des versions</p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-6">
+                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-gray-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-gray-100 dark:border-slate-700">
+                                    <div>
+                                        <h3 className="text-sm font-black text-gray-700 dark:text-gray-200 uppercase tracking-tight">Mises a jour auto</h3>
+                                        <p className="text-xs text-gray-400 font-medium mt-1">Verifie automatiquement les releases au demarrage.</p>
+                                    </div>
+                                    <button
+                                        onClick={() => setAutoUpdatesEnabled(prev => !prev)}
+                                        className={`relative w-16 h-9 rounded-full transition-all border ${autoUpdatesEnabled ? 'bg-emerald-500 border-emerald-400' : 'bg-gray-200 dark:bg-slate-700 border-gray-200 dark:border-slate-600'}`}
+                                        aria-pressed={autoUpdatesEnabled}
+                                    >
+                                        <span
+                                            className={`absolute top-1 h-7 w-7 rounded-full bg-white shadow-md transition-transform ${autoUpdatesEnabled ? 'translate-x-8' : 'translate-x-1'}`}
+                                        />
+                                    </button>
+                                </div>
+
+                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                    <div className="space-y-2">
+                                        <p className="text-xs text-gray-400 font-medium">
+                                            {updateStatus?.updateAvailable
+                                                ? `Nouvelle version: ${updateStatus.latestVersion}`
+                                                : updateStatus
+                                                    ? `Version actuelle: ${updateStatus.currentVersion}`
+                                                    : 'Aucune verification recente.'}
+                                        </p>
+                                        {lastCheckedAt && (
+                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                                                Derniere verification: {new Date(lastCheckedAt).toLocaleString('fr-FR')}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={handleCheckUpdates}
+                                        disabled={checkingUpdates}
+                                        className="px-6 py-3 bg-gray-900 text-white font-black rounded-2xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200 dark:shadow-none flex items-center justify-center gap-3 uppercase tracking-widest text-[10px] disabled:opacity-60 disabled:cursor-not-allowed"
+                                    >
+                                        <RefreshCcw size={16} className={checkingUpdates ? 'animate-spin' : ''} />
+                                        Verifier maintenant
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
                         <section className="bg-white dark:bg-slate-900 rounded-[32px] p-8 shadow-sm border border-gray-100 dark:border-slate-800">
                             <div className="flex items-center gap-4 mb-8">
                                 <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center">

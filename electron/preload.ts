@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('electron', {
     selectFile: () => ipcRenderer.invoke('select-file'),
     selectEditorPath: () => ipcRenderer.invoke('select-editor-path'),
     detectApps: () => ipcRenderer.invoke('detect-apps'),
+    checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+    openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
     getFilePath: (file: File) => {
         // @ts-ignore - webUtils exists in Electron 20+
         const { webUtils } = require('electron');

@@ -51,6 +51,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Rename macOS artifact (Intel)
+        if: matrix.platform == 'mac' && matrix.arch == 'x64'
+        run: |
+          for f in dist-exe/*.dmg; do
+            mv "$f" "${f//Mac.x64/Mac.Intel}"
+          done
+
+      - name: Rename macOS artifact (ARM)
+        if: matrix.platform == 'mac' && matrix.arch == 'arm64'
+        run: |
+          for f in dist-exe/*.dmg; do
+            mv "$f" "${f//Mac.arm64/Mac.ARM}"
+          done
+
       - name: Build Application (Linux)
         if: matrix.platform == 'linux'
         run: npm run build -- --linux --${{ matrix.arch }}

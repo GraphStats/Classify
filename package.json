@@ -8,6 +8,10 @@
   "scripts": {
     "dev": "concurrently \"tsc -p tsconfig.electron.json -w\" \"vite\" \"wait-on tcp:5173 && electron .\"",
     "build": "tsc -p tsconfig.electron.json && vite build && electron-builder --publish=never",
+    "build:win": "tsc -p tsconfig.electron.json && vite build && electron-builder --publish=never --win --x64",
+    "build:mac:x64": "tsc -p tsconfig.electron.json && vite build && electron-builder --publish=never --mac --x64",
+    "build:mac:arm64": "tsc -p tsconfig.electron.json && vite build && electron-builder --publish=never --mac --arm64",
+    "build:linux": "tsc -p tsconfig.electron.json && vite build && electron-builder --publish=never --linux --x64",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.electron.json --noEmit",
     "preview": "vite preview"

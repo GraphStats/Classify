@@ -82,10 +82,14 @@ jobs:
       - name: Build Application (Windows)
         if: matrix.platform == 'windows'
         run: npm run build -- --win --${{ matrix.arch }} --publish=never
+        env:
+          ELECTRON_BUILDER_PUBLISH: never
 
       - name: Build Application (macOS)
         if: matrix.platform == 'mac'
         run: npm run build -- --mac --${{ matrix.arch }} --publish=never
+        env:
+          ELECTRON_BUILDER_PUBLISH: never
 
       - name: Rename macOS artifact (Intel)
         if: matrix.platform == 'mac' && matrix.arch == 'x64'
@@ -122,6 +126,8 @@ jobs:
       - name: Build Application (Linux)
         if: matrix.platform == 'linux'
         run: npm run build -- --linux --${{ matrix.arch }} --publish=never
+        env:
+          ELECTRON_BUILDER_PUBLISH: never
 
       - name: Upload Windows Artifact
         if: matrix.platform == 'windows'

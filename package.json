@@ -1,7 +1,7 @@
 {
   "name": "classify",
   "private": true,
-  "version": "7.5.2",
+  "version": "7.5.3",
   "description": "Student Course Organizer",
   "author": "Drayko",
   "main": "dist-electron/main.js",
@@ -23,6 +23,10 @@
     ],
     "win": {
       "target": "nsis",
+      "icon": "public/icon.png"
+    },
+    "mac": {
+      "target": "dmg",
       "icon": "public/icon.png"
     },
     "nsis": {

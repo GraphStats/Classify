@@ -81,15 +81,11 @@ jobs:
 
       - name: Build Application (Windows)
         if: matrix.platform == 'windows'
-        run: npm run build -- --win --${{ matrix.arch }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build -- --win --${{ matrix.arch }} --publish=never
 
       - name: Build Application (macOS)
         if: matrix.platform == 'mac'
-        run: npm run build -- --mac --${{ matrix.arch }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build -- --mac --${{ matrix.arch }} --publish=never
 
       - name: Rename macOS artifact (Intel)
         if: matrix.platform == 'mac' && matrix.arch == 'x64'
@@ -125,9 +121,7 @@ jobs:
 
       - name: Build Application (Linux)
         if: matrix.platform == 'linux'
-        run: npm run build -- --linux --${{ matrix.arch }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build -- --linux --${{ matrix.arch }} --publish=never
 
       - name: Upload Windows Artifact
         if: matrix.platform == 'windows'

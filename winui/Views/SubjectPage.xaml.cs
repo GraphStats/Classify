@@ -7,6 +7,9 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Windows.System;
+using System;
+using Windows.Foundation;
+using System.Collections.Generic;
 
 namespace Classify.WinUI.Views;
 
@@ -92,7 +95,6 @@ public sealed partial class SubjectPage : Page
             Title = "Supprimer la matière ?",
             Content = "Tous les cours associés seront supprimés.",
             PrimaryButtonText = "Supprimer",
-            CloseButtonText = "Annuler",
             CloseButtonText = "Annuler",
             DefaultButton = ContentDialogButton.Close
         };

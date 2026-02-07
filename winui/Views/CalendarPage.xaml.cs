@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Linq;
 using Windows.Foundation;
+using System;
 
 namespace Classify.WinUI.Views;
 

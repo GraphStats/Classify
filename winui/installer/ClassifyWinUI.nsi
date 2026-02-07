@@ -1,43 +1,46 @@
-; NSIS installer for Classify WinUI (unpackaged deployment)
-; Requires: place WindowsAppRuntime installer next to this script as windowsappruntimeinstall-x64.exe
-; Build with: makensis ClassifyWinUI.nsi
-
+; NSIS installer for Classify WinUI (Self-Contained Unpackaged)
 !include "MUI2.nsh"
 
 Name "Classify"
-OutFile "ClassifyWinUI-Setup.exe"
-InstallDir "$PROGRAMFILES\\Classify"
-InstallDirRegKey HKLM "Software\\Classify" "InstallDir"
-RequestExecutionLevel admin
+OutFile "..\\Classify-WinUI-Setup.exe"
+InstallDir "$LOCALAPPDATA\\ClassifyApp"
+InstallDirRegKey HKCU "Software\\Classify" "InstallDir"
+RequestExecutionLevel user ; Install in LocalAppData doesn't need admin
 
 !define MUI_ABORTWARNING
+; !define MUI_ICON "..\\public\\icon.ico" ; A decommenter si vous avez un fichier .ico
+
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
+
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
-!insertmacro MUI_LANGUAGE "English"
+
+!insertmacro MUI_LANGUAGE "French"
 
 Section "Application" SEC_APP
   SetOutPath "$INSTDIR"
-  File /r "..\\..\\out\\winui\\*.*"
+  ; Les fichiers sont dans winui/bin/publish (relatif a ce script)
+  File /r "..\\bin\\publish\\*.*"
+  
+  ; Raccourcis
+  CreateDirectory "$SMPROGRAMS\\Classify"
   CreateShortcut "$DESKTOP\\Classify.lnk" "$INSTDIR\\Classify.WinUI.exe"
   CreateShortcut "$SMPROGRAMS\\Classify\\Classify.lnk" "$INSTDIR\\Classify.WinUI.exe"
-  WriteRegStr HKLM "Software\\Classify" "InstallDir" "$INSTDIR"
+  
+  WriteRegStr HKCU "Software\\Classify" "InstallDir" "$INSTDIR"
   WriteUninstaller "$INSTDIR\\Uninstall.exe"
-SectionEnd
-
-Section "Windows App SDK runtime" SEC_RUNTIME
-  SetOutPath "$INSTDIR"
-  File "windowsappruntimeinstall-x64.exe"
-  ExecWait '"$INSTDIR\\windowsappruntimeinstall-x64.exe" /quiet /norestart'
 SectionEnd
 
 Section "Uninstall"
   Delete "$DESKTOP\\Classify.lnk"
   Delete "$SMPROGRAMS\\Classify\\Classify.lnk"
+  RMDir /r "$SMPROGRAMS\\Classify"
+  
   Delete "$INSTDIR\\Uninstall.exe"
   RMDir /r "$INSTDIR"
-  DeleteRegKey HKLM "Software\\Classify"
+  
+  DeleteRegKey HKCU "Software\\Classify"
 SectionEnd

@@ -18,27 +18,12 @@
             <NavigationView.MenuItems>
                 <NavigationViewItem Content="Tableau de bord" Icon="Home" Tag="home" />
                 <NavigationViewItem Content="Calendrier" Icon="Calendar" Tag="calendar" />
-                <NavigationViewItemSeparator />
-                <NavigationViewItemHeader Content="Mes Matières" />
-                <NavigationViewItem x:Name="SubjectsItem" Click="OnSubjectsHeaderClick">
-                    <NavigationViewItem.Content>
-                         <ListView x:Name="SubjectList" 
-                                   SelectionMode="Single"
-                                   SelectionChanged="SubjectList_SelectionChanged"
-                                   BorderThickness="0"
-                                   Background="Transparent">
-                             <ListView.ItemTemplate>
-                                 <DataTemplate>
-                                     <StackPanel Orientation="Horizontal" Spacing="8">
-                                         <TextBlock Text="{Binding Emoji}" />
-                                         <TextBlock Text="{Binding Name}" />
-                                     </StackPanel>
-                                 </DataTemplate>
-                             </ListView.ItemTemplate>
-                         </ListView>
-                    </NavigationViewItem.Content>
-                </NavigationViewItem>
+                <NavigationViewItem Content="Nouvelle matière" Icon="Add" Tag="add_subject" Foreground="{ThemeResource SystemControlBackgroundAccentBrush}" />
             </NavigationView.MenuItems>
+
+            <NavigationView.PaneFooter>
+                <!-- Simple list for subjects if needed, but for now let's keep it simple -->
+            </NavigationView.PaneFooter>
 
             <Frame x:Name="ContentFrame" Margin="24">
                 <Frame.ContentTransitions>

@@ -3,6 +3,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System.Linq;
+using System;
+using Windows.Foundation;
 
 namespace Classify.WinUI.Views;
 
@@ -41,7 +43,15 @@ public sealed partial class SettingsPage : Page
 
         await ViewModel.SaveSettingsAsync(ViewModel.Settings);
         
-        // Simple visual feedback
+        if (this.Content is FrameworkElement root)
+        {
+            root.RequestedTheme = ViewModel.Settings.Theme?.ToLower() switch
+            {
+                "dark" => ElementTheme.Dark,
+                "light" => ElementTheme.Light,
+                _ => ElementTheme.Default
+            };
+        }
         var dialog = new ContentDialog
         {
             XamlRoot = this.XamlRoot,

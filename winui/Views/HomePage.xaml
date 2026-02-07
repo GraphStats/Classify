@@ -15,19 +15,6 @@
                 <TextBlock Text="Gérez vos cours et votre emploi du temps." Opacity="0.6" FontSize="16" />
             </StackPanel>
 
-            <!-- Quick Stats / Welcome Card -->
-            <Grid Padding="24" Background="{ThemeResource SystemControlBackgroundAccentBrush}" CornerRadius="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Spacing="4">
-                    <TextBlock Text="Prêt à réviser ?" FontSize="24" FontWeight="SemiBold" Foreground="White" />
-                    <TextBlock Text="Vous avez des sessions de révision prévues pour aujourd'hui." Foreground="White" Opacity="0.8" />
-                </StackPanel>
-                <Button Grid.Column="1" Content="Voir le calendrier" Background="White" Foreground="{ThemeResource SystemControlBackgroundAccentBrush}" VerticalAlignment="Center" Click="OnSeeCalendarClick" />
-            </Grid>
-
             <!-- Subjects Grid -->
             <StackPanel Spacing="16">
                 <Grid>
@@ -39,21 +26,26 @@
                           IsItemClickEnabled="True"
                           ItemClick="OnSubjectClick"
                           SelectionMode="None"
-                          HorizontalAlignment="Stretch"
                           Padding="0,0,0,12">
                     <GridView.ItemTemplate>
                         <DataTemplate x:DataType="vm:SubjectItemViewModel">
-                            <Grid Width="200" Height="140" Padding="16" Margin="0,0,12,12" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12">
+                            <Grid Width="200" Height="140" 
+                                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" 
+                                  BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+                                  BorderThickness="1" 
+                                  CornerRadius="12">
                                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="12">
-                                    <TextBlock Text="{x:Bind Emoji}" FontSize="40" HorizontalAlignment="Center" />
-                                    <TextBlock Text="{x:Bind Name}" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" TextAlignment="Center" />
+                                    <TextBlock Text="{Binding Emoji}" FontSize="40" HorizontalAlignment="Center" />
+                                    <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" TextAlignment="Center" />
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>
                     </GridView.ItemTemplate>
                     <GridView.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="-1" />
+                            <ItemsWrapGrid Orientation="Horizontal" 
+                                           HorizontalChildrenAlignment="Left"
+                                           ItemSpacing="12" />
                         </ItemsPanelTemplate>
                     </GridView.ItemsPanel>
                 </GridView>

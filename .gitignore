@@ -10,23 +10,42 @@ lerna-debug.log*
 # Dependency directories
 node_modules/
 jspm_packages/
+winui/Packages/
+winui/packages/
 
 # Build outputs
 dist/
 dist-ssr/
 dist-electron/
 dist-exe/
+electron-builder-debug.yml
 *.exe
 *.zip
 *.dmg
 *.AppImage
+*.msi
+*.msix
+
+# .NET / WinUI Build Outputs
+[Bb]in/
+[Oo]bj/
+winui/bin/
+winui/obj/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+winui/Generated Files/
+winui/ARM/
+winui/ARM64/
+winui/x64/
+winui/x86/
 
 # IDEs/Editors
 .vscode/*
 !.vscode/extensions.json
 .idea/
-*.suo
-*.ntvs*
+.vs/
 *.njsproj
 *.sln
 *.sw?
@@ -39,8 +58,11 @@ dist-exe/
 .env.test.local
 .env.production.local
 
-# TypeScript
+# TypeScript / Vite
 *.tsbuildinfo
-
-# Vite
 vite.config.ts.timestamp-*
+
+# User data (Local storage during dev)
+winui/subjects.json
+winui/settings.json
+winui/revisionEvents.json

@@ -54,11 +54,11 @@
                                 </Grid.ColumnDefinitions>
                                 
                                 <StackPanel Spacing="4" VerticalAlignment="Center">
-                                    <TextBlock Text="{x:Bind Title}" FontSize="16" FontWeight="SemiBold" />
-                                    <TextBlock Text="{x:Bind Date, Mode=OneWay}" Opacity="0.6" FontSize="12" />
+                                    <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding Date}" Opacity="0.6" FontSize="12" />
                                 </StackPanel>
                                 
-                                <ToggleSwitch Grid.Column="1" IsOn="{x:Bind IsDone, Mode=TwoWay}" Toggled="OnEventToggled" OnContent="" OffContent="" />
+                                <ToggleSwitch Grid.Column="1" IsOn="{Binding IsDone, Mode=TwoWay}" Toggled="OnEventToggled" OnContent="" OffContent="" />
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>

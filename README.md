@@ -10,12 +10,12 @@ Classify est désormais une application **WinUI 3** (Windows App SDK). Cette pag
   - `dotnet` (dans le SDK)
   - `nsis` (si vous voulez générer l’installeur .exe). Sous Windows : `choco install nsis -y`.
 
-## Build MSIX (local)
+## Build WinUI (unpackaged, local)
 ```powershell
 dotnet restore winui/Classify.WinUI.sln
-dotnet publish winui/Classify.WinUI.csproj -c Release -p:Platform=x64 -p:GenerateAppxPackageOnBuild=true -p:AppxBundle=Never -o out/winui
+dotnet publish winui/Classify.WinUI.csproj -c Release -p:Platform=x64 -p:WindowsPackageType=None -p:SelfContained=false -o out/winui
 ```
-Résultats : `out/winui/Classify.WinUI.exe` et le package MSIX dans `out/winui`.
+Résultat : `out/winui/Classify.WinUI.exe` (+ DLLs) prêt pour NSIS.
 
 ## Générer l’installeur NSIS (exe)
 1) Télécharger le runtime Windows App SDK x64 (1.6.250602001) et le placer dans `winui/installer/` :
@@ -34,7 +34,7 @@ Résultat : `winui/installer/ClassifyWinUI-Setup.exe` (installe le runtime puis 
 
 ## CI/CD (GitHub Actions)
 - Workflow : `.github/workflows/release.yml`
-  - `build-winui` (Windows) : build MSIX, génère l’installateur NSIS, uploade les artefacts.
+  - `build-winui` (Windows) : build WinUI unpackaged, génère l’installateur NSIS, uploade les artefacts.
   - `release` (Ubuntu) : assemble le zip, attache le zip + l’exe NSIS à la release taggée `vX.Y.Z` (version issue de `package.json`).
 
 ## Nettoyer / régénérer

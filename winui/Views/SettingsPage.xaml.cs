@@ -1,10 +1,8 @@
-using Classify.WinUI.Models;
 using Classify.WinUI.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Classify.WinUI.Views;
 
@@ -21,24 +19,41 @@ public sealed partial class SettingsPage : Page
     {
         base.OnNavigatedTo(e);
         ViewModel = e.Parameter as MainViewModel;
-        if (ViewModel?.Settings is AppSettings settings)
+        
+        if (ViewModel != null)
         {
-            NameBox.Text = settings.UserName ?? string.Empty;
-            var tag = settings.Theme ?? "light";
-            var item = ThemeCombo.Items.OfType<ComboBoxItem>().FirstOrDefault(i => (string)i.Tag == tag);
+            NameBox.Text = ViewModel.Settings.UserName ?? "";
+            var theme = ViewModel.Settings.Theme ?? "light";
+            var item = ThemeCombo.Items.Cast<ComboBoxItem>().FirstOrDefault(i => i.Tag.ToString() == theme);
             if (item != null) ThemeCombo.SelectedItem = item;
         }
     }
 
     private async void OnSaveClick(object sender, RoutedEventArgs e)
     {
-        if (ViewModel is null) return;
-        var selected = ThemeCombo.SelectedItem as ComboBoxItem;
-        var theme = (string?)selected?.Tag ?? "light";
-        await ViewModel.SaveSettingsAsync(new AppSettings
+        if (ViewModel == null) return;
+
+        ViewModel.Settings.UserName = NameBox.Text;
+        if (ThemeCombo.SelectedItem is ComboBoxItem item)
         {
-            Theme = theme,
-            UserName = NameBox.Text
-        });
+            ViewModel.Settings.Theme = item.Tag.ToString();
+        }
+
+        await ViewModel.SaveSettingsAsync(ViewModel.Settings);
+        
+        // Simple visual feedback
+        var dialog = new ContentDialog
+        {
+            XamlRoot = this.XamlRoot,
+            Title = "Succès",
+            Content = "Paramètres enregistrés avec succès.",
+            CloseButtonText = "OK"
+        };
+        await dialog.ShowAsync();
+    }
+
+    private void OnThemeChanged(object sender, SelectionChangedEventArgs e)
+    {
+        // Real-time theme switching could be implemented here
     }
 }

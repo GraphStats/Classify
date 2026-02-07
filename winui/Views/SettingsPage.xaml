@@ -6,17 +6,51 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Padding="32" Spacing="16">
-        <TextBlock Text="Paramètres" FontSize="24" FontWeight="SemiBold" />
+    <ScrollViewer>
+        <StackPanel Padding="40" Spacing="32" MaxWidth="800" HorizontalAlignment="Left">
+            <StackPanel Spacing="8">
+                <TextBlock Text="Paramètres" FontSize="36" FontWeight="Bold" />
+                <TextBlock Text="Personnalisez votre expérience Classify." Opacity="0.6" FontSize="16" />
+            </StackPanel>
 
-        <ComboBox x:Name="ThemeCombo" Header="Thème" SelectedIndex="0">
-            <ComboBoxItem Content="Clair" Tag="light" />
-            <ComboBoxItem Content="Sombre" Tag="dark" />
-            <ComboBoxItem Content="Auto" Tag="auto" />
-        </ComboBox>
+            <!-- Appearance Section -->
+            <StackPanel Spacing="16">
+                <TextBlock Text="Apparence" FontSize="20" FontWeight="SemiBold" />
+                
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center" Spacing="4">
+                            <TextBlock Text="Thème de l'application" FontWeight="SemiBold" />
+                            <TextBlock Text="Choisissez entre le mode clair, sombre ou l'adaptation système." Opacity="0.6" FontSize="12" />
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" x:Name="ThemeCombo" Width="150" SelectionChanged="OnThemeChanged">
+                            <ComboBoxItem Content="Clair" Tag="light" />
+                            <ComboBoxItem Content="Sombre" Tag="dark" />
+                            <ComboBoxItem Content="Auto" Tag="auto" />
+                        </ComboBox>
+                    </Grid>
+                </Border>
+            </StackPanel>
 
-        <TextBox x:Name="NameBox" Header="Votre nom" />
+            <!-- User Profile Section -->
+            <StackPanel Spacing="16">
+                <TextBlock Text="Profil" FontSize="20" FontWeight="SemiBold" />
+                
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="20">
+                    <StackPanel Spacing="12">
+                        <TextBox x:Name="NameBox" Header="Votre nom d'utilisateur" PlaceholderText="Entrez votre nom" />
+                        <TextBlock Text="Ce nom sera affiché sur le tableau de bord." Opacity="0.6" FontSize="12" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
 
-        <Button Content="Enregistrer" Click="OnSaveClick" Style="{StaticResource AccentButtonStyle}" Width="140" />
-    </StackPanel>
+            <Button Content="Enregistrer les modifications" Click="OnSaveClick" Style="{StaticResource AccentButtonStyle}" Padding="24,12" />
+            
+            <TextBlock Text="Classify v8.0.4 - Drayko" Opacity="0.4" FontSize="12" HorizontalAlignment="Center" Margin="0,40,0,0" />
+        </StackPanel>
+    </ScrollViewer>
 </Page>

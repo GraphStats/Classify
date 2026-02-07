@@ -93,8 +93,8 @@ public sealed partial class SubjectPage : Page
             Content = "Tous les cours associés seront supprimés.",
             PrimaryButtonText = "Supprimer",
             CloseButtonText = "Annuler",
-            DefaultButton = ContentDialogButton.Close,
-            PrimaryButtonStyle = (Style)Application.Current.Resources["AccentButtonStyle"]
+            CloseButtonText = "Annuler",
+            DefaultButton = ContentDialogButton.Close
         };
 
         var result = await dialog.ShowAsync();

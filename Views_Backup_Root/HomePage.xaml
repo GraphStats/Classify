@@ -39,7 +39,7 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Button Content="Créer une matière" Click="OnCreateSubjectClick" Style="{StaticResource AccentButtonStyle}" Width="220" />
+            <Button Content="Créer une matière" Click="OnCreateSubjectClick" Width="220" />
         </StackPanel>
     </Grid>
 </Page>

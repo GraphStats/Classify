@@ -97,7 +97,6 @@ jobs:
           ZIP="Classify.WinUI.${{ steps.version.outputs.version }}.zip"
           cd artifacts/winui
           zip -r "../$ZIP" .
-          mv "../$ZIP" ..
 
       - name: Create or update release
         env:

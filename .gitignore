@@ -29,6 +29,7 @@ dist-exe/
 *.ntvs*
 *.njsproj
 *.sln
+!winui/Classify.WinUI.sln
 *.sw?
 .DS_Store
 

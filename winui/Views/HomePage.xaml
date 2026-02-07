@@ -27,6 +27,16 @@
                           ItemClick="OnSubjectClick"
                           SelectionMode="None"
                           Padding="0,0,0,12">
+                    <GridView.ItemContainerStyle>
+                        <Style TargetType="GridViewItem">
+                            <Setter Property="Margin" Value="0,0,12,12" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="MinWidth" Value="0" />
+                            <Setter Property="MinHeight" Value="0" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </GridView.ItemContainerStyle>
                     <GridView.ItemTemplate>
                         <DataTemplate x:DataType="vm:SubjectItemViewModel">
                             <Grid Width="200" Height="140" 
@@ -44,11 +54,11 @@
                     <GridView.ItemsPanel>
                         <ItemsPanelTemplate>
                             <ItemsWrapGrid Orientation="Horizontal" 
-                                           HorizontalChildrenAlignment="Left"
-                                           ItemSpacing="12" />
+                                           HorizontalChildrenAlignment="Left" />
                         </ItemsPanelTemplate>
                     </GridView.ItemsPanel>
                 </GridView>
++ 
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

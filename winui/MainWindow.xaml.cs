@@ -29,7 +29,7 @@ public sealed partial class MainWindow : Window
         ContentFrame.Navigate(typeof(HomePage), ViewModel);
     }
 
-    private void ApplyTheme()
+    internal void ApplyTheme()
     {
         if (this.Content is FrameworkElement rootElement)
         {

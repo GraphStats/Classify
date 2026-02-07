@@ -43,15 +43,9 @@ public sealed partial class SettingsPage : Page
 
         await ViewModel.SaveSettingsAsync(ViewModel.Settings);
         
-        if (this.Content is FrameworkElement root)
-        {
-            root.RequestedTheme = ViewModel.Settings.Theme?.ToLower() switch
-            {
-                "dark" => ElementTheme.Dark,
-                "light" => ElementTheme.Light,
-                _ => ElementTheme.Default
-            };
-        }
+        // Apply theme to the whole window
+        MainWindow.Instance?.ApplyTheme();
+        
         var dialog = new ContentDialog
         {
             XamlRoot = this.XamlRoot,

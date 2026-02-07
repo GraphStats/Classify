@@ -15,7 +15,9 @@ public sealed partial class MainWindow : Window
     {
         this.InitializeComponent();
         ExtendsContentIntoTitleBar = true;
-        SetTitleBar(null); // Custom title bar or default
+        SetTitleBar(null); 
+        
+        SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop();
         
         SubjectList.ItemsSource = ViewModel.Subjects;
     }

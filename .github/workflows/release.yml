@@ -63,6 +63,14 @@ jobs:
           name: winui-msix
           path: artifacts
 
+      - name: Archive artifacts
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          ZIP="Classify.WinUI.${{ steps.version.outputs.version }}.zip"
+          cd artifacts
+          zip -r "../$ZIP" .
+          mv "../$ZIP" .
+
       - name: Create or update release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -82,9 +90,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="v${{ steps.version.outputs.version }}"
-          mapfile -t files < <(find artifacts -type f)
-          if [ ${#files[@]} -eq 0 ]; then
-            echo "No artifacts found to upload."
+          FILE="artifacts/Classify.WinUI.${{ steps.version.outputs.version }}.zip"
+          if [ ! -f "$FILE" ]; then
+            echo "Archive $FILE not found."
             exit 1
           fi
-          gh release upload "$TAG" "${files[@]}" --repo "$GITHUB_REPOSITORY" --clobber
+          gh release upload "$TAG" "$FILE" --repo "$GITHUB_REPOSITORY" --clobber

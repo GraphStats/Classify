@@ -4,7 +4,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:vm="using:Classify.WinUI.ViewModels"
     mc:Ignorable="d"
     Title="Classify"
     Height="800"
@@ -24,19 +23,6 @@
             <NavigationViewItem Content="Accueil" Icon="Home" Tag="home" />
             <NavigationViewItem Content="Calendrier" Icon="Calendar" Tag="calendar" />
         </NavigationView.MenuItems>
-
-        <NavigationView.MenuItemsSource>
-            <x:Bind ViewModel.Subjects />
-        </NavigationView.MenuItemsSource>
-
-        <NavigationView.MenuItemTemplate>
-            <DataTemplate x:DataType="vm:SubjectItemViewModel">
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBlock Text="{x:Bind Emoji}" FontSize="16" />
-                    <TextBlock Text="{x:Bind Name}" />
-                </StackPanel>
-            </DataTemplate>
-        </NavigationView.MenuItemTemplate>
 
         <NavigationView.FooterMenuItems>
             <NavigationViewItem Content="Paramètres" Icon="Setting" Tag="settings" />

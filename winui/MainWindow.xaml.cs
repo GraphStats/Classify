@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using System;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
@@ -22,6 +23,8 @@ public sealed partial class MainWindow : Window
     {
         await ViewModel.InitializeAsync();
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        ViewModel.Subjects.CollectionChanged += OnSubjectsChanged;
+        RefreshSubjects();
         ApplyTheme(ViewModel.Settings.Theme);
         ShellNav.SelectedItem = ShellNav.MenuItems[0];
         NavigateTo("home");
@@ -70,14 +73,17 @@ public sealed partial class MainWindow : Window
     {
         if (args.SelectedItem is NavigationViewItem navItem && navItem.Tag is string tag)
         {
-            NavigateTo(tag);
+            if (tag.StartsWith("subject:", StringComparison.Ordinal))
+            {
+                var subjectId = tag.Substring("subject:".Length);
+                ViewModel.ActiveSubjectId = subjectId;
+                NavigateTo("subject", new Models.SubjectNavigationParameter { SubjectId = subjectId, ViewModel = ViewModel });
+            }
+            else
+            {
+                NavigateTo(tag);
+            }
             return;
-        }
-
-        if (args.SelectedItem is SubjectItemViewModel subject)
-        {
-            ViewModel.ActiveSubjectId = subject.Id;
-            NavigateTo("subject", new Models.SubjectNavigationParameter { SubjectId = subject.Id, ViewModel = ViewModel });
         }
     }
 
@@ -85,7 +91,16 @@ public sealed partial class MainWindow : Window
     {
         if (args.InvokedItemContainer is NavigationViewItem navItem && navItem.Tag is string tag)
         {
-            NavigateTo(tag);
+            if (tag.StartsWith("subject:", StringComparison.Ordinal))
+            {
+                var subjectId = tag.Substring("subject:".Length);
+                ViewModel.ActiveSubjectId = subjectId;
+                NavigateTo("subject", new Models.SubjectNavigationParameter { SubjectId = subjectId, ViewModel = ViewModel });
+            }
+            else
+            {
+                NavigateTo(tag);
+            }
         }
     }
 
@@ -118,9 +133,52 @@ public sealed partial class MainWindow : Window
             var subject = await ViewModel.AddSubjectAsync(nameBox.Text.Trim(), string.IsNullOrWhiteSpace(emojiBox.Text) ? "📚" : emojiBox.Text.Trim());
             if (subject != null)
             {
-                ShellNav.SelectedItem = subject;
+                RefreshSubjects();
+                ShellNav.SelectedItem = FindNavItemForSubject(subject.Id);
                 NavigateTo("subject", new Models.SubjectNavigationParameter { SubjectId = subject.Id, ViewModel = ViewModel });
             }
         }
+    }
+
+    private void OnSubjectsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        RefreshSubjects();
+    }
+
+    private void RefreshSubjects()
+    {
+        // remove existing dynamic subject items
+        for (int i = ShellNav.MenuItems.Count - 1; i >= 0; i--)
+        {
+            if (ShellNav.MenuItems[i] is NavigationViewItem nvi &&
+                nvi.Tag is string tag &&
+                tag.StartsWith("subject:", StringComparison.Ordinal))
+            {
+                ShellNav.MenuItems.RemoveAt(i);
+            }
+        }
+
+        foreach (var subject in ViewModel.Subjects)
+        {
+            ShellNav.MenuItems.Add(new NavigationViewItem
+            {
+                Content = $"{subject.Emoji} {subject.Name}",
+                Tag = $"subject:{subject.Id}",
+                Icon = new SymbolIcon(Symbol.Bookmarks)
+            });
+        }
+    }
+
+    private NavigationViewItem? FindNavItemForSubject(string subjectId)
+    {
+        foreach (var item in ShellNav.MenuItems)
+        {
+            if (item is NavigationViewItem nvi && nvi.Tag is string tag &&
+                tag.Equals($"subject:{subjectId}", StringComparison.Ordinal))
+            {
+                return nvi;
+            }
+        }
+        return null;
     }
 }

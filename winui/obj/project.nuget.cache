@@ -1,0 +1,53 @@
+{
+  "version": 2,
+  "dgSpecHash": "ITMQb3Tap68=",
+  "success": false,
+  "projectFilePath": "C:\\Users\\GraphStats\\Desktop\\Code\\Newer\\Pro\\Classify\\winui\\Classify.WinUI.csproj",
+  "expectedPackageFiles": [],
+  "logs": [
+    {
+      "code": "NU1101",
+      "level": "Error",
+      "message": "Package Microsoft.WindowsAppSDK introuvable. Aucun package associé à cet ID n'existe dans la ou les sources suivantes\u00A0: C:\\Program Files\\dotnet\\library-packs, Microsoft Visual Studio Offline Packages",
+      "projectPath": "C:\\Users\\GraphStats\\Desktop\\Code\\Newer\\Pro\\Classify\\winui\\Classify.WinUI.csproj",
+      "filePath": "C:\\Users\\GraphStats\\Desktop\\Code\\Newer\\Pro\\Classify\\winui\\Classify.WinUI.csproj",
+      "libraryId": "Microsoft.WindowsAppSDK",
+      "targetGraphs": [
+        "net8.0-windows10.0.19041"
+      ]
+    },
+    {
+      "code": "NU1101",
+      "level": "Error",
+      "message": "Package Microsoft.Windows.SDK.BuildTools introuvable. Aucun package associé à cet ID n'existe dans la ou les sources suivantes\u00A0: C:\\Program Files\\dotnet\\library-packs, Microsoft Visual Studio Offline Packages",
+      "projectPath": "C:\\Users\\GraphStats\\Desktop\\Code\\Newer\\Pro\\Classify\\winui\\Classify.WinUI.csproj",
+      "filePath": "C:\\Users\\GraphStats\\Desktop\\Code\\Newer\\Pro\\Classify\\winui\\Classify.WinUI.csproj",
+      "libraryId": "Microsoft.Windows.SDK.BuildTools",
+      "targetGraphs": [
+        "net8.0-windows10.0.19041"
+      ]
+    },
+    {
+      "code": "NU1101",
+      "level": "Error",
+      "message": "Package CommunityToolkit.Mvvm introuvable. Aucun package associé à cet ID n'existe dans la ou les sources suivantes\u00A0: C:\\Program Files\\dotnet\\library-packs, Microsoft Visual Studio Offline Packages",
+      "projectPath": "C:\\Users\\GraphStats\\Desktop\\Code\\Newer\\Pro\\Classify\\winui\\Classify.WinUI.csproj",
+      "filePath": "C:\\Users\\GraphStats\\Desktop\\Code\\Newer\\Pro\\Classify\\winui\\Classify.WinUI.csproj",
+      "libraryId": "CommunityToolkit.Mvvm",
+      "targetGraphs": [
+        "net8.0-windows10.0.19041"
+      ]
+    },
+    {
+      "code": "NU1101",
+      "level": "Error",
+      "message": "Package Microsoft.Windows.SDK.NET.Ref introuvable. Aucun package associé à cet ID n'existe dans la ou les sources suivantes\u00A0: C:\\Program Files\\dotnet\\library-packs, Microsoft Visual Studio Offline Packages",
+      "projectPath": "C:\\Users\\GraphStats\\Desktop\\Code\\Newer\\Pro\\Classify\\winui\\Classify.WinUI.csproj",
+      "filePath": "C:\\Users\\GraphStats\\Desktop\\Code\\Newer\\Pro\\Classify\\winui\\Classify.WinUI.csproj",
+      "libraryId": "Microsoft.Windows.SDK.NET.Ref",
+      "targetGraphs": [
+        "net8.0-windows10.0.19041"
+      ]
+    }
+  ]
+}

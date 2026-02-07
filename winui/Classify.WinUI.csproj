@@ -3,7 +3,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <UseWinUI>true</UseWinUI>
-    <EnableDefaultPageItems>false</EnableDefaultPageItems>
+    <EnableDefaultItems>false</EnableDefaultItems>
     <EnableMsixTooling>true</EnableMsixTooling>
     <RootNamespace>Classify.WinUI</RootNamespace>
     <Platforms>x64</Platforms>
@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Page Include="App.xaml" />
+    <ApplicationDefinition Include="App.xaml" />
     <Page Include="MainWindow.xaml" />
     <Page Include="Views\\HomePage.xaml" />
     <Page Include="Views\\SubjectPage.xaml" />

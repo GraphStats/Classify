@@ -18,7 +18,7 @@ dotnet publish winui/Classify.WinUI.csproj -c Release -p:Platform=x64 -p:Generat
 Résultats : `out/winui/Classify.WinUI.exe` et le package MSIX dans `out/winui`.
 
 ## Générer l’installeur NSIS (exe)
-1) Télécharger le runtime Windows App SDK x64 et le placer dans `winui/installer/` :
+1) Télécharger le runtime Windows App SDK x64 (1.6.250602001) et le placer dans `winui/installer/` :
 ```powershell
 Invoke-WebRequest "https://aka.ms/windowsappsdk/1.6/1.6.250602001/windowsappruntimeinstall-x64.exe" -OutFile winui/installer/windowsappruntimeinstall-x64.exe
 ```
@@ -44,4 +44,4 @@ dotnet publish winui/Classify.WinUI.csproj -c Release -p:Platform=x64 -p:Generat
 ```
 
 ## Licence
-© 2026 Drayko. Usage interne.
+© 2026 Drayko.

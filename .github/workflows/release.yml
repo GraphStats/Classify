@@ -55,6 +55,20 @@ jobs:
       - name: Publish WinUI (MSIX)
         run: dotnet publish winui/Classify.WinUI.csproj -c Release -p:Platform=x64 -p:GenerateAppxPackageOnBuild=true -p:AppxBundle=Never -o out/winui
 
+      - name: Install NSIS
+        run: choco install nsis --yes
+
+      - name: Download Windows App Runtime installer
+        shell: pwsh
+        run: |
+          $url = "https://aka.ms/windowsappsdk/1.6/1.6.250602001/windowsappruntimeinstall-x64.exe"
+          Invoke-WebRequest -Uri $url -OutFile "winui/installer/windowsappruntimeinstall-x64.exe"
+
+      - name: Build WinUI NSIS installer
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\NSIS\makensis.exe" "winui/installer/ClassifyWinUI.nsi"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -62,6 +76,12 @@ jobs:
           path: |
             out/winui/**
             winui/Package.appxmanifest
+
+      - name: Upload WinUI NSIS installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: winui-nsis
+          path: winui/installer/ClassifyWinUI-Setup.exe
 
   release:
     runs-on: ubuntu-latest
@@ -92,6 +112,12 @@ jobs:
           name: winui-msix
           path: artifacts/winui
 
+      - name: Download WinUI NSIS installer
+        uses: actions/download-artifact@v4
+        with:
+          name: winui-nsis
+          path: artifacts/winui-nsis
+
       - name: Download NSIS artifact
         uses: actions/download-artifact@v4
         with:
@@ -102,9 +128,9 @@ jobs:
         run: |
           TAG="v${{ steps.version.outputs.version }}"
           ZIP="Classify.WinUI.${{ steps.version.outputs.version }}.zip"
-          cd artifacts
+          cd artifacts/winui
           zip -r "../$ZIP" .
-          mv "../$ZIP" .
+          mv "../$ZIP" ..
 
       - name: Create or update release
         env:
@@ -125,9 +151,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="v${{ steps.version.outputs.version }}"
-          FILE="artifacts/Classify.WinUI.${{ steps.version.outputs.version }}.zip"
-          if [ ! -f "$FILE" ]; then
-            echo "Archive $FILE not found."
+          FILE_ZIP="artifacts/Classify.WinUI.${{ steps.version.outputs.version }}.zip"
+          FILE_NSIS_WINUI="$(find artifacts/winui-nsis -type f -name '*.exe' | head -n1)"
+          if [ ! -f "$FILE_ZIP" ]; then
+            echo "Archive $FILE_ZIP not found."
             exit 1
           fi
-          gh release upload "$TAG" "$FILE" --repo "$GITHUB_REPOSITORY" --clobber
+          if [ -z "$FILE_NSIS_WINUI" ]; then
+            echo "WinUI NSIS installer not found."
+            exit 1
+          fi
+          gh release upload "$TAG" "$FILE_ZIP" "$FILE_NSIS_WINUI" --repo "$GITHUB_REPOSITORY" --clobber

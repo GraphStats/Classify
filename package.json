@@ -1,5 +1,86 @@
 {
-  "name": "classify-winui",
-  "private": true,
-  "version": "8.0.4"
+    "name":  "classify",
+    "private":  true,
+    "version":  "7.6.6",
+    "description":  "Student Course Organizer",
+    "author":  "Drayko",
+    "main":  "dist-electron/main.js",
+    "scripts":  {
+                    "dev":  "concurrently \"tsc -p tsconfig.electron.json -w\" \"vite\" \"wait-on tcp:5173 \u0026\u0026 electron .\"",
+                    "build":  "tsc -p tsconfig.electron.json \u0026\u0026 vite build \u0026\u0026 electron-builder --publish=never",
+                    "build:win":  "tsc -p tsconfig.electron.json \u0026\u0026 vite build \u0026\u0026 electron-builder --publish=never --win --x64",
+                    "build:mac:x64":  "tsc -p tsconfig.electron.json \u0026\u0026 vite build \u0026\u0026 electron-builder --publish=never --mac --x64",
+                    "build:mac:arm64":  "tsc -p tsconfig.electron.json \u0026\u0026 vite build \u0026\u0026 electron-builder --publish=never --mac --arm64",
+                    "build:linux":  "tsc -p tsconfig.electron.json \u0026\u0026 vite build \u0026\u0026 electron-builder --publish=never --linux --x64",
+                    "lint":  "eslint .",
+                    "typecheck":  "tsc -p tsconfig.app.json --noEmit \u0026\u0026 tsc -p tsconfig.electron.json --noEmit",
+                    "preview":  "vite preview"
+                },
+    "build":  {
+                  "appId":  "com.student.classify",
+                  "productName":  "Classify",
+                  "directories":  {
+                                      "output":  "dist-exe"
+                                  },
+                  "files":  [
+                                "dist/**/*",
+                                "dist-electron/**/*"
+                            ],
+                  "win":  {
+                              "target":  "nsis",
+                              "icon":  "public/icon.png",
+                              "artifactName":  "Classify.Setup.Windows.${version}.exe"
+                          },
+                  "mac":  {
+                              "target":  "dmg",
+                              "icon":  "public/icon-512.png",
+                              "artifactName":  "Classify.Setup.Mac.${arch}.${version}.dmg"
+                          },
+                  "linux":  {
+                                "target":  "AppImage",
+                                "icon":  "public/icon-512.png",
+                                "artifactName":  "Classify.Setup.Linux.${version}.AppImage"
+                            },
+                  "publish":  [
+                                  {
+                                      "provider":  "github",
+                                      "owner":  "GraphStats",
+                                      "repo":  "Classify"
+                                  }
+                              ],
+                  "nsis":  {
+                               "oneClick":  false,
+                               "allowToChangeInstallationDirectory":  true
+                           }
+              },
+    "dependencies":  {
+                         "@fontsource/fredoka":  "^5.2.10",
+                         "@fontsource/outfit":  "^5.2.8",
+                         "electron-updater":  "^6.7.3",
+                         "emoji-picker-react":  "^4.16.1",
+                         "lucide-react":  "^0.562.0",
+                         "react":  "^19.2.0",
+                         "react-dom":  "^19.2.0"
+                     },
+    "devDependencies":  {
+                            "@eslint/js":  "^9.39.1",
+                            "@types/node":  "^24.10.1",
+                            "@types/react":  "^19.2.5",
+                            "@types/react-dom":  "^19.2.3",
+                            "@vitejs/plugin-react":  "^5.1.1",
+                            "autoprefixer":  "^10.4.23",
+                            "concurrently":  "^9.2.1",
+                            "electron":  "^39.2.7",
+                            "electron-builder":  "^26.4.0",
+                            "eslint":  "^9.39.1",
+                            "eslint-plugin-react-hooks":  "^7.0.1",
+                            "eslint-plugin-react-refresh":  "^0.4.24",
+                            "globals":  "^16.5.0",
+                            "postcss":  "^8.5.6",
+                            "tailwindcss":  "^3.4.17",
+                            "typescript":  "~5.9.3",
+                            "typescript-eslint":  "^8.46.4",
+                            "vite":  "^7.2.4",
+                            "wait-on":  "^9.0.3"
+                        }
 }

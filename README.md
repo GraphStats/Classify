@@ -1,47 +1,46 @@
-# Classify – WinUI 3
+# 🎓 Classify - L'Espace de Travail Ultime pour Étudiants
 
-Classify est désormais une application **WinUI 3** (Windows App SDK). Cette page explique uniquement comment la construire et produire les installateurs MSIX et NSIS.
+Classify est une application de bureau (Electron) conçue pour aider les étudiants à organiser leurs cours, dossiers et révisions avec une interface premium, fluide et hautement personnalisable.
 
-## Prérequis
-- Windows 10 20H1 (build 19041) ou plus récent.
-- .NET SDK 8.0 (ou 9.0 si vous l’avez, le workflow l’installe aussi).
-- Windows App SDK runtime (sera installé automatiquement par le setup NSIS ; optionnel si vous exécutez le MSIX).
-- Outils :
-  - `dotnet` (dans le SDK)
-  - `nsis` (si vous voulez générer l’installeur .exe). Sous Windows : `choco install nsis -y`.
+## 🚀 Fonctionnalités Clés
 
-## Build WinUI (unpackaged, local)
-```powershell
-dotnet restore winui/Classify.WinUI.sln
-dotnet publish winui/Classify.WinUI.csproj -c Release -p:Platform=x64 -p:WindowsPackageType=None -p:SelfContained=false -o out/winui
-```
-Résultat : `out/winui/Classify.WinUI.exe` (+ DLLs) prêt pour NSIS.
+- **📦 Organisation par Matières & Dossiers** : Créez vos espaces de travail, ajoutez des emojis personnalisés et organisez vos documents par simple glisser-déposer (Drag & Drop).
+- **📅 Calendrier de Révision Intelligent** : Planifiez vos sessions d'étude. Basculez entre une vue **Grille** (mensuelle) et une vue **Liste** (chronologique) pour ne jamais perdre le fil.
+- **✨ Interface Premium & Dark Mode** : Une esthétique moderne avec des effets de flou (backdrop-blur), des animations fluides et un mode sombre somptueux pour les révisions nocturnes.
+- **🛡️ Confidentialité & Vitesse** : Toutes vos données sont stockées **localement** sur votre machine. Pas de serveurs, pas de cloud, une rapidité instantanée.
+- **🛠️ Intégration d'Éditeurs Externes** : Configurez vos logiciels préférés (Word, Obsidian, VS Code, etc.) pour ouvrir vos documents directement depuis Classify.
+- **🎨 Custom Dialogs** : Fini les alertes système génériques. Classify utilise ses propres boîtes de dialogue stylisées pour une immersion totale.
 
-## Générer l’installeur NSIS (exe)
-1) Télécharger le runtime Windows App SDK x64 (1.6.250602001) et le placer dans `winui/installer/` :
-```powershell
-Invoke-WebRequest "https://aka.ms/windowsappsdk/1.6/1.6.250602001/windowsappruntimeinstall-x64.exe" -OutFile winui/installer/windowsappruntimeinstall-x64.exe
-```
-2) Construire l’installeur :
-```powershell
-"C:\Program Files (x86)\NSIS\makensis.exe" winui/installer/ClassifyWinUI.nsi
-```
-Résultat : `winui/installer/ClassifyWinUI-Setup.exe` (installe le runtime puis l’app).
+## 🛠️ Stack Technique
 
-## Utilisation rapide
-- Avec runtime déjà présent : lancez `out/winui/Classify.WinUI.exe`.
-- Sinon : lancez `ClassifyWinUI-Setup.exe` (installe runtime + application, crée les raccourcis).
+- **Frontend** : Vite + React + TypeScript
+- **Styling** : Tailwind CSS
+- **Desktop Framework** : Electron
+- **Icons** : Lucide React
+- **Persistence** : Local Storage & Electron-store logic
 
-## CI/CD (GitHub Actions)
-- Workflow : `.github/workflows/release.yml`
-  - `build-winui` (Windows) : build WinUI unpackaged, génère l’installateur NSIS, uploade les artefacts.
-  - `release` (Ubuntu) : assemble le zip, attache le zip + l’exe NSIS à la release taggée `vX.Y.Z` (version issue de `package.json`).
+## 📦 Installation & Construction
 
-## Nettoyer / régénérer
-```powershell
-rimraf out
-dotnet publish winui/Classify.WinUI.csproj -c Release -p:Platform=x64 -p:GenerateAppxPackageOnBuild=true -p:AppxBundle=Never -o out/winui
+### Prérequis
+- Node.js (version LTS recommandée)
+- npm
+
+### Développement
+```bash
+# Installer les dépendances
+npm install
+
+# Lancer en mode développement
+npm run dev
 ```
 
-## Licence
-© 2026 Drayko.
+### Générer l'installateur (.exe)
+Il suffit de lancer le script fourni à la racine :
+```bash
+./GENERATE_EXE.bat
+```
+L'installateur sera généré dans le dossier `dist-exe`.
+
+## 📄 Licence
+
+© 2026 **Drayko**. Fait avec passion pour les étudiants.

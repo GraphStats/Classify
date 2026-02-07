@@ -20,9 +20,6 @@ dist-exe/
 *.zip
 *.dmg
 *.AppImage
-bin/
-obj/
-out
 
 # IDEs/Editors
 .vscode/*
@@ -32,7 +29,6 @@ out
 *.ntvs*
 *.njsproj
 *.sln
-!winui/Classify.WinUI.sln
 *.sw?
 .DS_Store
 

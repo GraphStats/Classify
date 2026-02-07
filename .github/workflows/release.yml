@@ -1,4 +1,4 @@
-name: WinUI Build & Release
+name: Release
 
 on:
   push:
@@ -6,101 +6,184 @@ on:
       - main
 
 jobs:
-  build-winui:
-    runs-on: windows-latest
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.409
-
-      - name: Restore
-        run: dotnet restore winui/Classify.WinUI.sln
-
-      - name: Publish WinUI (unpackaged)
-        run: dotnet publish winui/Classify.WinUI.csproj -c Release -p:Platform=x64 -p:WindowsPackageType=None -p:SelfContained=false -p:PublishSingleFile=false -o out/winui
-
-      - name: Install NSIS
-        run: choco install nsis --yes
-
-      - name: Download Windows App Runtime installer
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path "winui/installer" | Out-Null
-          $url = "https://aka.ms/windowsappsdk/1.6/1.6.250602001/windowsappruntimeinstall-x64.exe"
-          Invoke-WebRequest -Uri $url -OutFile "winui/installer/windowsappruntimeinstall-x64.exe"
-
-      - name: Build WinUI NSIS installer
-        shell: pwsh
-        run: |
-          & "C:\Program Files (x86)\NSIS\makensis.exe" "winui/installer/ClassifyWinUI.nsi"
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: winui-msix
-          path: |
-            out/winui/**
-
-      - name: Upload WinUI NSIS installer
-        uses: actions/upload-artifact@v4
-        with:
-          name: winui-nsis
-          path: winui/installer/ClassifyWinUI-Setup.exe
-
-  release:
+  preflight:
     runs-on: ubuntu-latest
-    needs:
-      - build-winui
     permissions:
-      contents: write
+      contents: read
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22.12.0
+          cache: 'npm'
 
-      - name: Get version
-        id: version
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Verify version is new
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          LATEST_JSON=$(curl -sSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/repos/GraphStats/Classify/releases/latest || true)
+          LATEST=$(echo "$LATEST_JSON" | jq -r '.tag_name // empty')
+          LATEST=${LATEST#v}
+          echo "package.json version: $VERSION"
+          echo "latest release tag: ${LATEST:-none}"
+          if [ -n "$LATEST" ] && [ "$LATEST" = "$VERSION" ]; then
+            echo "Version $VERSION is already released. Bump version before building."
+            exit 1
+          fi
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+  build:
+    needs: preflight
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+            arch: x64
+          - os: macos-15-intel
+            platform: mac
+            arch: x64
+          - os: macos-latest
+            platform: mac
+            arch: arm64
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Application (Windows)
+        if: matrix.platform == 'windows'
+        run: npm run build:win
+
+      - name: Build Application (macOS)
+        if: matrix.platform == 'mac'
+        run: npm run build:mac:${{ matrix.arch }}
+
+      - name: Rename macOS artifact (Intel)
+        if: matrix.platform == 'mac' && matrix.arch == 'x64'
+        run: |
+          for f in dist-exe/*.dmg; do
+            mv "$f" "${f//Mac.x64/Mac.Intel}"
+          done
+          for f in dist-exe/*.blockmap; do
+            mv "$f" "${f//Mac.x64/Mac.Intel}"
+          done
+          python - <<'PY'
+          from pathlib import Path
+          for path in Path("dist-exe").glob("latest-mac*.yml"):
+              text = path.read_text()
+              path.write_text(text.replace("Mac.x64", "Mac.Intel"))
+          PY
+
+      - name: Rename macOS artifact (ARM)
+        if: matrix.platform == 'mac' && matrix.arch == 'arm64'
+        run: |
+          for f in dist-exe/*.dmg; do
+            mv "$f" "${f//Mac.arm64/Mac.ARM}"
+          done
+          for f in dist-exe/*.blockmap; do
+            mv "$f" "${f//Mac.arm64/Mac.ARM}"
+          done
+          if [ -f dist-exe/latest-mac.yml ]; then
+            mv dist-exe/latest-mac.yml dist-exe/latest-mac-arm64.yml
+          fi
+          python - <<'PY'
+          from pathlib import Path
+          for path in Path("dist-exe").glob("latest-mac*.yml"):
+              text = path.read_text()
+              path.write_text(text.replace("Mac.arm64", "Mac.ARM"))
+          PY
+
+      - name: Build Application (Linux)
+        if: matrix.platform == 'linux'
+        run: npm run build:linux
+
+      - name: Upload Windows Artifact
+        if: matrix.platform == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-windows-x64
+          path: |
+            dist-exe/*.exe
+            dist-exe/*.yml
+            dist-exe/*.blockmap
+
+      - name: Upload macOS Artifact
+        if: matrix.platform == 'mac'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-macos-${{ matrix.arch }}
+          path: |
+            dist-exe/*.dmg
+            dist-exe/*.yml
+            dist-exe/*.blockmap
+
+      - name: Upload Linux Artifact
+        if: matrix.platform == 'linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-linux-${{ matrix.arch }}
+          path: |
+            dist-exe/*.AppImage
+            dist-exe/*.yml
+            dist-exe/*.blockmap
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Get Version from package.json
+        id: package-version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: winui-msix
-          path: artifacts/winui
-
-      - name: Download WinUI NSIS installer
-        uses: actions/download-artifact@v4
-        with:
-          name: winui-nsis
-          path: artifacts/winui-nsis
-
-      - name: Archive artifacts
-        run: |
-          TAG="v${{ steps.version.outputs.version }}"
-          ZIP="Classify.WinUI.${{ steps.version.outputs.version }}.zip"
-          cd artifacts/winui
-          zip -r "../$ZIP" .
+          path: artifacts
 
       - name: Create or update release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="v${{ steps.version.outputs.version }}"
-          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+          VERSION="${{ steps.package-version.outputs.version }}"
+          TAG="v$VERSION"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
             echo "Release $TAG already exists."
           else
             gh release create "$TAG" \
@@ -109,19 +192,17 @@ jobs:
               --notes "${{ github.event.head_commit.message }}"
           fi
 
-      - name: Upload assets
+      - name: Upload release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="v${{ steps.version.outputs.version }}"
-          FILE_ZIP="artifacts/Classify.WinUI.${{ steps.version.outputs.version }}.zip"
-          FILE_NSIS_WINUI="$(find artifacts/winui-nsis -type f -name '*.exe' | head -n1)"
-          if [ ! -f "$FILE_ZIP" ]; then
-            echo "Archive $FILE_ZIP not found."
+          VERSION="${{ steps.package-version.outputs.version }}"
+          TAG="v$VERSION"
+          shopt -s nullglob globstar
+          find artifacts \( -name 'builder-debug.yml' -o -name 'builder-effective-config.yml' \) -delete
+          files=(artifacts/**/*.exe artifacts/**/*.dmg artifacts/**/*.AppImage artifacts/**/*.yml artifacts/**/*.blockmap)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No release artifacts found to upload."
             exit 1
           fi
-          if [ -z "$FILE_NSIS_WINUI" ]; then
-            echo "WinUI NSIS installer not found."
-            exit 1
-          fi
-          gh release upload "$TAG" "$FILE_ZIP" "$FILE_NSIS_WINUI" --repo "$GITHUB_REPOSITORY" --clobber
+          gh release upload "$TAG" "${files[@]}" --repo "$GITHUB_REPOSITORY" --clobber

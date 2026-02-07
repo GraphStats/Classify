@@ -1,0 +1,50 @@
+import React, { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import '@fontsource/outfit/300.css'
+import '@fontsource/outfit/400.css'
+import '@fontsource/outfit/500.css'
+import '@fontsource/outfit/600.css'
+import '@fontsource/outfit/700.css'
+import '@fontsource/fredoka/300.css'
+import '@fontsource/fredoka/400.css'
+import '@fontsource/fredoka/500.css'
+import '@fontsource/fredoka/600.css'
+import './index.css'
+import App from './App.tsx'
+
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: Error | null }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("Uncaught error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 20, color: 'red' }}>
+          <h1>Something went wrong.</h1>
+          <pre>{this.state.error?.toString()}</pre>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+console.log('Mounting App...');
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </StrictMode>,
+)

@@ -65,4 +65,9 @@ public sealed partial class HomePage : Page
             }
         }
     }
+
+    private void OnSeeCalendarClick(object sender, RoutedEventArgs e)
+    {
+        Frame.Navigate(typeof(CalendarPage), ViewModel);
+    }
 }

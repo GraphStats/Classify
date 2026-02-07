@@ -20,6 +20,8 @@ dist-exe/
 *.zip
 *.dmg
 *.AppImage
+bin/
+obj/
 
 # IDEs/Editors
 .vscode/*

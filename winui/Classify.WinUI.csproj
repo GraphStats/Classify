@@ -4,7 +4,7 @@
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <UseWinUI>true</UseWinUI>
     <EnableDefaultItems>true</EnableDefaultItems>
-    <EnableMsixTooling>false</EnableMsixTooling>
+    <EnableMsixTooling>true</EnableMsixTooling>
     <WindowsPackageType>None</WindowsPackageType>
     <RootNamespace>Classify.WinUI</RootNamespace>
     <Platforms>x64</Platforms>

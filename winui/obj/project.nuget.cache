@@ -1,0 +1,39 @@
+{
+  "version": 2,
+  "dgSpecHash": "09ZCdbIgvLI=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\GraphStats\\Desktop\\Code\\Newer\\Pro\\Classify\\winui\\Classify.WinUI.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\GraphStats\\.nuget\\packages\\microsoft.web.webview2\\1.0.2651.64\\microsoft.web.webview2.1.0.2651.64.nupkg.sha512",
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages\\microsoft.windows.sdk.buildtools\\10.0.26100.1742\\microsoft.windows.sdk.buildtools.10.0.26100.1742.nupkg.sha512",
+    "C:\\Users\\GraphStats\\.nuget\\packages\\microsoft.windowsappsdk\\1.6.241114003\\microsoft.windowsappsdk.1.6.241114003.nupkg.sha512",
+    "C:\\Users\\GraphStats\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\8.0.19\\microsoft.netcore.app.runtime.win-x64.8.0.19.nupkg.sha512",
+    "C:\\Users\\GraphStats\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x86\\8.0.19\\microsoft.netcore.app.runtime.win-x86.8.0.19.nupkg.sha512",
+    "C:\\Users\\GraphStats\\.nuget\\packages\\microsoft.netcore.app.runtime.win-arm64\\8.0.19\\microsoft.netcore.app.runtime.win-arm64.8.0.19.nupkg.sha512",
+    "C:\\Users\\GraphStats\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\8.0.19\\microsoft.windowsdesktop.app.runtime.win-x64.8.0.19.nupkg.sha512",
+    "C:\\Users\\GraphStats\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x86\\8.0.19\\microsoft.windowsdesktop.app.runtime.win-x86.8.0.19.nupkg.sha512",
+    "C:\\Users\\GraphStats\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-arm64\\8.0.19\\microsoft.windowsdesktop.app.runtime.win-arm64.8.0.19.nupkg.sha512",
+    "C:\\Users\\GraphStats\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\8.0.19\\microsoft.aspnetcore.app.runtime.win-x64.8.0.19.nupkg.sha512",
+    "C:\\Users\\GraphStats\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x86\\8.0.19\\microsoft.aspnetcore.app.runtime.win-x86.8.0.19.nupkg.sha512",
+    "C:\\Users\\GraphStats\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-arm64\\8.0.19\\microsoft.aspnetcore.app.runtime.win-arm64.8.0.19.nupkg.sha512",
+    "C:\\Users\\GraphStats\\.nuget\\packages\\microsoft.netcore.app.crossgen2.win-x64\\8.0.19\\microsoft.netcore.app.crossgen2.win-x64.8.0.19.nupkg.sha512",
+    "C:\\Users\\GraphStats\\.nuget\\packages\\microsoft.windows.sdk.net.ref\\10.0.19041.57\\microsoft.windows.sdk.net.ref.10.0.19041.57.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1603",
+      "level": "Warning",
+      "message": "Classify.WinUI dépend de Microsoft.Windows.SDK.BuildTools (>= 10.0.26100.174) mais Microsoft.Windows.SDK.BuildTools 10.0.26100.174 est introuvable. Microsoft.Windows.SDK.BuildTools 10.0.26100.1742 a été résolu à la place.",
+      "projectPath": "C:\\Users\\GraphStats\\Desktop\\Code\\Newer\\Pro\\Classify\\winui\\Classify.WinUI.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\GraphStats\\Desktop\\Code\\Newer\\Pro\\Classify\\winui\\Classify.WinUI.csproj",
+      "libraryId": "Microsoft.Windows.SDK.BuildTools",
+      "targetGraphs": [
+        "net8.0-windows10.0.19041",
+        "net8.0-windows10.0.19041/win-arm64",
+        "net8.0-windows10.0.19041/win-x64",
+        "net8.0-windows10.0.19041/win-x86"
+      ]
+    }
+  ]
+}

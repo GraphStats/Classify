@@ -1,0 +1,12 @@
+C:\Users\GraphStats\Desktop\Code\Newer\Pro\Classify\winui\obj\Release\net8.0-windows10.0.19041.0\win-x64\Classify.WinUI.csproj.AssemblyReference.cache
+C:\Users\GraphStats\Desktop\Code\Newer\Pro\Classify\winui\obj\Release\net8.0-windows10.0.19041.0\win-x64\App.g.i.cs
+C:\Users\GraphStats\Desktop\Code\Newer\Pro\Classify\winui\obj\Release\net8.0-windows10.0.19041.0\win-x64\App.g.cs
+C:\Users\GraphStats\Desktop\Code\Newer\Pro\Classify\winui\obj\Release\net8.0-windows10.0.19041.0\win-x64\MainWindow.g.i.cs
+C:\Users\GraphStats\Desktop\Code\Newer\Pro\Classify\winui\obj\Release\net8.0-windows10.0.19041.0\win-x64\MainWindow.g.cs
+C:\Users\GraphStats\Desktop\Code\Newer\Pro\Classify\winui\obj\Release\net8.0-windows10.0.19041.0\win-x64\XamlTypeInfo.g.cs
+C:\Users\GraphStats\Desktop\Code\Newer\Pro\Classify\winui\obj\Release\net8.0-windows10.0.19041.0\win-x64\App.xaml
+C:\Users\GraphStats\Desktop\Code\Newer\Pro\Classify\winui\obj\Release\net8.0-windows10.0.19041.0\win-x64\MainWindow.xaml
+C:\Users\GraphStats\Desktop\Code\Newer\Pro\Classify\winui\obj\Release\net8.0-windows10.0.19041.0\win-x64\App.xbf
+C:\Users\GraphStats\Desktop\Code\Newer\Pro\Classify\winui\obj\Release\net8.0-windows10.0.19041.0\win-x64\MainWindow.xbf
+C:\Users\GraphStats\Desktop\Code\Newer\Pro\Classify\winui\obj\Release\net8.0-windows10.0.19041.0\win-x64\XamlSaveStateFile.xml
+C:\Users\GraphStats\Desktop\Code\Newer\Pro\Classify\winui\obj\Release\net8.0-windows10.0.19041.0\win-x64\Classify.WinUI.GeneratedMSBuildEditorConfig.editorconfig

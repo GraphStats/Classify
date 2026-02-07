@@ -1,6 +1,6 @@
 # 🎓 Classify - L'Espace de Travail Ultime pour Étudiants
 
-Classify est une application de bureau (Electron) conçue pour aider les étudiants à organiser leurs cours, dossiers et révisions avec une interface premium, fluide et hautement personnalisable.
+Classify est une application de bureau (WinUI 3 / Electron) conçue pour aider les étudiants à organiser leurs cours, dossiers et révisions avec une interface premium, fluide et hautement personnalisable.
 
 ## 🚀 Fonctionnalités Clés
 
@@ -15,9 +15,9 @@ Classify est une application de bureau (Electron) conçue pour aider les étudia
 
 - **Frontend** : Vite + React + TypeScript
 - **Styling** : Tailwind CSS
-- **Desktop Framework** : Electron
+- **Desktop Framework** : WinUI 3 (Windows App SDK) / Electron
 - **Icons** : Lucide React
-- **Persistence** : Local Storage & Electron-store logic
+- **Persistence** : Local Storage & C# Bridge logic
 
 ## 📦 Installation & Construction
 
@@ -34,8 +34,14 @@ npm install
 npm run dev
 ```
 
-### Générer l'installateur (.exe)
-Il suffit de lancer le script fourni à la racine :
+### Générer l'application (WinUI 3)
+Utilisez le script dédié pour Windows :
+```bash
+./GENERATE_WINUI_EXE.bat
+```
+L'application compilée se trouvera dans `winui/bin/publish`.
+
+### Générer l'application (Electron)
 ```bash
 ./GENERATE_EXE.bat
 ```

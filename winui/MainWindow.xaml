@@ -1,0 +1,52 @@
+<Window
+    x:Class="Classify.WinUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Classify">
+
+    <Grid>
+        <NavigationView x:Name="NavView"
+                        PaneDisplayMode="Left"
+                        IsBackButtonVisible="Collapsed"
+                        IsSettingsVisible="True"
+                        Header="Classify"
+                        ItemInvoked="NavView_ItemInvoked"
+                        Loaded="NavView_Loaded">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Tableau de bord" Icon="Home" Tag="home" />
+                <NavigationViewItem Content="Calendrier" Icon="Calendar" Tag="calendar" />
+                <NavigationViewItemSeparator />
+                <NavigationViewItemHeader Content="Mes Matières" />
+                <NavigationViewItem x:Name="SubjectsItem" Click="OnSubjectsHeaderClick">
+                    <NavigationViewItem.Content>
+                         <ListView x:Name="SubjectList" 
+                                   SelectionMode="Single"
+                                   SelectionChanged="SubjectList_SelectionChanged"
+                                   BorderThickness="0"
+                                   Background="Transparent">
+                             <ListView.ItemTemplate>
+                                 <DataTemplate>
+                                     <StackPanel Orientation="Horizontal" Spacing="8">
+                                         <TextBlock Text="{Binding Emoji}" />
+                                         <TextBlock Text="{Binding Name}" />
+                                     </StackPanel>
+                                 </DataTemplate>
+                             </ListView.ItemTemplate>
+                         </ListView>
+                    </NavigationViewItem.Content>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+
+            <Frame x:Name="ContentFrame" Margin="24">
+                <Frame.ContentTransitions>
+                    <TransitionCollection>
+                        <NavigationThemeTransition />
+                    </TransitionCollection>
+                </Frame.ContentTransitions>
+            </Frame>
+        </NavigationView>
+    </Grid>
+</Window>

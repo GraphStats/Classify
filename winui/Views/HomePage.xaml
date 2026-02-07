@@ -25,7 +25,7 @@
                     <TextBlock Text="Prêt à réviser ?" FontSize="24" FontWeight="SemiBold" Foreground="White" />
                     <TextBlock Text="Vous avez des sessions de révision prévues pour aujourd'hui." Foreground="White" Opacity="0.8" />
                 </StackPanel>
-                <Button Grid.Column="1" Content="Voir le calendrier" Background="White" Foreground="{ThemeResource SystemControlBackgroundAccentBrush}" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="Voir le calendrier" Background="White" Foreground="{ThemeResource SystemControlBackgroundAccentBrush}" VerticalAlignment="Center" Click="OnSeeCalendarClick" />
             </Grid>
 
             <!-- Subjects Grid -->

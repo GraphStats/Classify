@@ -1,7 +1,7 @@
 {
     "name":  "classify",
     "private":  true,
-    "version":  "7.6.6",
+    "version":  "8.0.0",
     "description":  "Student Course Organizer",
     "author":  "Drayko",
     "main":  "dist-electron/main.js",

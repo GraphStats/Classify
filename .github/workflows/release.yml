@@ -1,4 +1,4 @@
-name: Release
+name: WinUI Build & Release
 
 on:
   push:
@@ -6,184 +6,67 @@ on:
       - main
 
 jobs:
-  preflight:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.12.0
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Verify version is new
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          LATEST_JSON=$(curl -sSL -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/repos/GraphStats/Classify/releases/latest || true)
-          LATEST=$(echo "$LATEST_JSON" | jq -r '.tag_name // empty')
-          LATEST=${LATEST#v}
-          echo "package.json version: $VERSION"
-          echo "latest release tag: ${LATEST:-none}"
-          if [ -n "$LATEST" ] && [ "$LATEST" = "$VERSION" ]; then
-            echo "Version $VERSION is already released. Bump version before building."
-            exit 1
-          fi
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Typecheck
-        run: npm run typecheck
-
-  build:
-    needs: preflight
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            platform: windows
-            arch: x64
-          - os: macos-15-intel
-            platform: mac
-            arch: x64
-          - os: macos-latest
-            platform: mac
-            arch: arm64
-          - os: ubuntu-latest
-            platform: linux
-            arch: x64
-    runs-on: ${{ matrix.os }}
+  build-winui:
+    runs-on: windows-latest
     permissions:
       contents: write
 
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
-          node-version: 22.12.0
-          cache: 'npm'
+          dotnet-version: |
+            8.0.x
+            9.0.x
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Restore
+        run: dotnet restore winui/Classify.WinUI.sln
 
-      - name: Build Application (Windows)
-        if: matrix.platform == 'windows'
-        run: npm run build:win
+      - name: Publish WinUI (MSIX)
+        run: dotnet publish winui/Classify.WinUI.csproj -c Release -p:Platform=x64 -p:GenerateAppxPackageOnBuild=true -p:AppxBundle=Never -o out/winui
 
-      - name: Build Application (macOS)
-        if: matrix.platform == 'mac'
-        run: npm run build:mac:${{ matrix.arch }}
-
-      - name: Rename macOS artifact (Intel)
-        if: matrix.platform == 'mac' && matrix.arch == 'x64'
-        run: |
-          for f in dist-exe/*.dmg; do
-            mv "$f" "${f//Mac.x64/Mac.Intel}"
-          done
-          for f in dist-exe/*.blockmap; do
-            mv "$f" "${f//Mac.x64/Mac.Intel}"
-          done
-          python - <<'PY'
-          from pathlib import Path
-          for path in Path("dist-exe").glob("latest-mac*.yml"):
-              text = path.read_text()
-              path.write_text(text.replace("Mac.x64", "Mac.Intel"))
-          PY
-
-      - name: Rename macOS artifact (ARM)
-        if: matrix.platform == 'mac' && matrix.arch == 'arm64'
-        run: |
-          for f in dist-exe/*.dmg; do
-            mv "$f" "${f//Mac.arm64/Mac.ARM}"
-          done
-          for f in dist-exe/*.blockmap; do
-            mv "$f" "${f//Mac.arm64/Mac.ARM}"
-          done
-          if [ -f dist-exe/latest-mac.yml ]; then
-            mv dist-exe/latest-mac.yml dist-exe/latest-mac-arm64.yml
-          fi
-          python - <<'PY'
-          from pathlib import Path
-          for path in Path("dist-exe").glob("latest-mac*.yml"):
-              text = path.read_text()
-              path.write_text(text.replace("Mac.arm64", "Mac.ARM"))
-          PY
-
-      - name: Build Application (Linux)
-        if: matrix.platform == 'linux'
-        run: npm run build:linux
-
-      - name: Upload Windows Artifact
-        if: matrix.platform == 'windows'
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-windows-x64
+          name: winui-msix
           path: |
-            dist-exe/*.exe
-            dist-exe/*.yml
-            dist-exe/*.blockmap
-
-      - name: Upload macOS Artifact
-        if: matrix.platform == 'mac'
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-macos-${{ matrix.arch }}
-          path: |
-            dist-exe/*.dmg
-            dist-exe/*.yml
-            dist-exe/*.blockmap
-
-      - name: Upload Linux Artifact
-        if: matrix.platform == 'linux'
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-linux-${{ matrix.arch }}
-          path: |
-            dist-exe/*.AppImage
-            dist-exe/*.yml
-            dist-exe/*.blockmap
+            out/winui/**
+            winui/Package.appxmanifest
 
   release:
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-winui
     permissions:
       contents: write
 
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Get Version from package.json
-        id: package-version
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.12.0
+
+      - name: Get version
+        id: version
+        run: echo "version=$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
+          name: winui-msix
           path: artifacts
 
       - name: Create or update release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="${{ steps.package-version.outputs.version }}"
-          TAG="v$VERSION"
-          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+          TAG="v${{ steps.version.outputs.version }}"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release $TAG already exists."
           else
             gh release create "$TAG" \
@@ -192,17 +75,15 @@ jobs:
               --notes "${{ github.event.head_commit.message }}"
           fi
 
-      - name: Upload release assets
+      - name: Upload assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="${{ steps.package-version.outputs.version }}"
-          TAG="v$VERSION"
+          TAG="v${{ steps.version.outputs.version }}"
           shopt -s nullglob globstar
-          find artifacts \( -name 'builder-debug.yml' -o -name 'builder-effective-config.yml' \) -delete
-          files=(artifacts/**/*.exe artifacts/**/*.dmg artifacts/**/*.AppImage artifacts/**/*.yml artifacts/**/*.blockmap)
+          files=(artifacts/**/*)
           if [ ${#files[@]} -eq 0 ]; then
-            echo "No release artifacts found to upload."
+            echo "No artifacts found to upload."
             exit 1
           fi
           gh release upload "$TAG" "${files[@]}" --repo "$GITHUB_REPOSITORY" --clobber
